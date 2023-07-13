@@ -99,7 +99,8 @@ echo "fi" >> /home/$USR/.bashrc
 cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
 if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
-    EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`" 
+    EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
+    echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile	
     source /home/$USR/.profile
 fi
             
