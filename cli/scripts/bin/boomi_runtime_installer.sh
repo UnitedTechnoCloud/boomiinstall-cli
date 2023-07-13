@@ -14,7 +14,7 @@ whoami
 echo "Cloud Platform : ${platform}"
 echo "Atom Name : ${atomName}"
 echo "Atom Type : ${atomType}"
-echo "Boomi Environment : ${boomiEnv}"
+echo "Boomi Environment : ${env}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
@@ -99,10 +99,7 @@ echo "fi" >> /home/$USR/.bashrc
 cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
 if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
-    EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
-    echo "aws configure --profile boomi-profile set region $EC2_REGION" >> .profile
-    echo "export AWS_DEFAULT_PROFILE=boomi-profile" >> .profile
-    echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile 
+    EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`" 
     source /home/$USR/.profile
 fi
             
@@ -127,8 +124,8 @@ if [ "${platform}" = "aws" ]; then
     echo "Created File System is ${EFSMount}"
     export efsMount=${EFSMount}
     export atomName=${atomName}
-    export env=${BoomiEnv}
-	echo "environment is ${BoomiEnv}"
+    export env=${env}
+	echo "environment is ${env}"
 	echo "purge Days is ${purgeHistoryDays}"
 	echo "max Memory is ${maxMem}"
     export atomType=${atomType}
