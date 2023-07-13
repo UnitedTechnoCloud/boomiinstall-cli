@@ -67,12 +67,13 @@ set -e
 ## download boomicicd CLI 
 sudo apt-get install -y jq -y
 sudo apt-get install -y libxml2-utils -y
+
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
 #git clone https://${githubToken}@github.com/UnitedTechnoCloud/boomicicd-cli
 git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-cd /home/$USR/boomi/boomicicd/boomicicd-cli/cli/
+cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 set +e
 
 # download Boomi installers
@@ -95,7 +96,7 @@ chmod u+x /home/$USR/.profile
 echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
 echo "	. /home/$USR/.profile" >> /home/$USR/.bashrc
 echo "fi" >> /home/$USR/.bashrc
-cp /home/$USR/boomi/boomicicd/boomicicd-cli/cli/scripts/home/.profile .
+cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
 if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
     EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
@@ -138,7 +139,7 @@ if [ "${platform}" = "aws" ]; then
 	export classification=${classification}
 	export region=${region}
 	export DataDogAPIKey=${DataDogAPIKey}
-    cd /home/$USR/boomi/boomicicd/boomicicd-cli/cli/scripts
+    cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
     source bin/efsMount.sh efsMount=${EFSMount} defaultAWSRegion=${region}
 	#export authToken="BOOMI_TOKEN.$userName:$apiToken"
 	export authToken=${authToken}
@@ -146,11 +147,11 @@ if [ "${platform}" = "aws" ]; then
     source bin/init.sh atomType=${atomType} atomName=${atomName} env=${env} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
 else
     # GCP/Azure platforms
-    cd /home/$USR/boomi/boomicicd/boomicicd-cli/cli/scripts
+    cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
     source bin/exports.sh
     source bin/efsMount.sh efsMount=${efsMount}
     echo "run init.sh..."
-    sudo su - $USR -c "cd ~/boomi/boomicicd/boomicicd-cli/cli/scripts;export authToken=${boomiAtmosphereToken};. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}"
+    sudo su - $USR -c "cd ~/boomi/boomicicd/boomiinstall-cli/cli/scripts;export authToken=${boomiAtmosphereToken};. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}"
 fi
 EOF
 
