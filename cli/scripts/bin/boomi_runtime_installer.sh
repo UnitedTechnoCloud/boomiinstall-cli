@@ -14,10 +14,10 @@ whoami
 echo "Cloud Platform : ${platform}"
 echo "Atom Name : ${atomName}"
 echo "Atom Type : ${atomType}"
-echo "Boomi Environment : ${env}"
+echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
-echo "efsMount : ${efsMount}"
+echo "efsMount : ${EfsMount}"
 echo "githubToken : ${githubToken}"
 
 #  create boomi user
@@ -122,27 +122,27 @@ if [ "${platform}" = "aws" ]; then
     echo "Hello, I am running as $USR"
     source /home/$USR/.profile
     # Your script commands go here
-    echo "Created File System is ${EFSMount}"
-    export efsMount=${EFSMount}
+    echo "Created File System is ${EfsMount}"
+    export efsMount=${EfsMount}
     export atomName=${atomName}
-    export env=${env}
-	echo "environment is ${env}"
-	echo "purge Days is ${purgeHistoryDays}"
-	echo "max Memory is ${maxMem}"
+    export env=${boomiEnv}
+    echo "environment is ${boomiEnv}"
+    echo "purge Days is ${purgeHistoryDays}"
+    echo "max Memory is ${maxMem}"
     export atomType=${atomType}
     export defaultRegion=${defaultRegion}
-	export defaultAWSRegion=${region} 
-	#export userName=${userName}
-	#export apiToken=${apiToken}
-	export classification=${classification}
-	export region=${region}
-	export DataDogAPIKey=${DataDogAPIKey}
+    export defaultAWSRegion=${region} 
+    #export userName=${userName}
+    #export apiToken=${apiToken}
+    export classification=${classification}
+    export region=${region}
+    export DataDogAPIKey=${DataDogAPIKey}
     cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
-    source bin/efsMount.sh efsMount=${EFSMount} defaultAWSRegion=${region}
-	#export authToken="BOOMI_TOKEN.$userName:$apiToken"
-	export authToken=${authToken}
+    source bin/efsMount.sh efsMount=${EfsMount} defaultAWSRegion=${region}
+    #export authToken="BOOMI_TOKEN.$userName:$apiToken"
+    export authToken=${authToken}
     source bin/exports.sh
-    source bin/init.sh atomType=${atomType} atomName=${atomName} env=${env} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
+    source bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
 else
     # GCP/Azure platforms
     cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts

@@ -61,3 +61,13 @@ instances:
 EOF
 
 chown dd-agent:dd-agent /etc/datadog-agent/conf.d/jmx.d/conf.yaml
+
+echo "restart datadog service after applying config changes..."
+sudo systemctl restart datadog-agent.service 
+
+echo "datadog install complete.."
+
+if [ -n ${platform} ] ; then
+  touch /etc/datadog_installer
+  echo "datadog_installer flag created"
+fi
