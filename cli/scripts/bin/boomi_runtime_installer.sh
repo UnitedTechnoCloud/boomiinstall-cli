@@ -19,6 +19,8 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${EfsMount}"
 echo "githubToken : ${githubToken}"
+echo "client : ${client}"
+echo "group : ${group}"
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -143,6 +145,8 @@ if [ "${platform}" = "aws" ]; then
     source bin/efsMount.sh efsMount=${EfsMount} defaultAWSRegion=${region}
     #export authToken="BOOMI_TOKEN.$userName:$apiToken"
     export authToken=${authToken}
+	export client=${client}
+	export group=${group}	
 	env
     source bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
 else
