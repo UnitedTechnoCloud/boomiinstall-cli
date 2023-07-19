@@ -126,7 +126,7 @@ if [ "${platform}" = "aws" ]; then
     source bin/efsMount.sh efsMount=${EFSMount} defaultAWSRegion=${region}
 	#export authToken="BOOMI_TOKEN.$userName:$apiToken"
 	export authToken=${authToken}
-    source bin/exports.sh
+    #source bin/exports.sh
 	env
     source bin/init.sh atomType=${atomType} atomName=${atomName} env=${env} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
 else

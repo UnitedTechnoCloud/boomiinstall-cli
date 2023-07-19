@@ -68,11 +68,11 @@ set -e
 sudo apt-get install -y jq -y
 sudo apt-get install -y libxml2-utils -y
 
-mkdir -p  /home/$USR/boomi/boomicicd
-cd /home/$USR/boomi/boomicicd
-echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
+#mkdir -p  /home/$USR/boomi/boomicicd
+#cd /home/$USR/boomi/boomicicd
+#echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
 #git clone https://${githubToken}@github.com/UnitedTechnoCloud/boomicicd-cli
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+#git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 set +e
 
@@ -141,6 +141,7 @@ if [ "${platform}" = "aws" ]; then
     source bin/efsMount.sh efsMount=${EfsMount} defaultAWSRegion=${region}
     #export authToken="BOOMI_TOKEN.$userName:$apiToken"
     export authToken=${authToken}
+	env
     source bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
 else
     # GCP/Azure platforms
