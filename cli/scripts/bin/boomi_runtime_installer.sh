@@ -1,5 +1,5 @@
 #!/bin/bash
-#set -x
+set -x
 if [ -n ${platform} ] ; then
     if [[ -f /etc/boomi_runtime_installer ]]; then 
         echo "boomi_runtime_installer already run so will not be run again!"
@@ -63,19 +63,19 @@ else
     echo "awscli install not required!"
 fi
 
-set -e
+#set -e
 ## download boomicicd CLI 
 sudo apt-get install -y jq -y
 sudo apt-get install -y libxml2-utils -y
 
-#mkdir -p  /home/$USR/boomi/boomicicd
-#cd /home/$USR/boomi/boomicicd
-#echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
+mkdir -p  /home/$USR/boomi/boomicicd
+cd /home/$USR/boomi/boomicicd
+echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
 #git clone https://${githubToken}@github.com/UnitedTechnoCloud/boomicicd-cli
-#git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
 ls -lrth /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
-set +e
+#set +e
 
 # download Boomi installers
 echo "download boomi installers..."
@@ -122,6 +122,7 @@ echo "install boomi runtime as $USR"
 if [ "${platform}" = "aws" ]; then
     echo "Hello, I am running as $USR"
     source /home/$USR/.profile
+	cat /home/$USR/.profile
     # Your script commands go here
     echo "Created File System is ${EfsMount}"
     export efsMount=${EfsMount}
