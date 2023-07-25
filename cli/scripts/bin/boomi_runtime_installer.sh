@@ -1,6 +1,6 @@
 #!/bin/bash
-set -x
-if [ -n ${platform} ] ; then
+#set -x
+if [ -n "$platform" ] ; then
     if [[ -f /etc/boomi_runtime_installer ]]; then 
         echo "boomi_runtime_installer already run so will not be run again!"
         exit 0; 
@@ -17,10 +17,7 @@ echo "Atom Type : ${atomType}"
 echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
-echo "efsMount : ${EfsMount}"
-echo "githubToken : ${githubToken}"
-echo "client : ${client}"
-echo "group : ${group}"
+echo "efsMount : ${efsMount}"
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -65,7 +62,7 @@ else
     echo "awscli install not required!"
 fi
 
-#set -e
+set -e
 ## download boomicicd CLI 
 sudo apt-get install -y jq -y
 sudo apt-get install -y libxml2-utils -y
@@ -73,11 +70,9 @@ sudo apt-get install -y libxml2-utils -y
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-#git clone https://${githubToken}@github.com/UnitedTechnoCloud/boomicicd-cli
 git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-ls -lrth /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
-#set +e
+set +e
 
 # download Boomi installers
 echo "download boomi installers..."
@@ -121,47 +116,20 @@ whoami
 # install boomi
 sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
-if [ "${platform}" = "aws" ]; then
-    echo "Hello, I am running as $USR"
-    source /home/$USR/.profile
-	cat /home/$USR/.profile
-    # Your script commands go here
-    echo "Created File System is ${EfsMount}"
-    export efsMount=${EfsMount}
-    export atomName=${atomName}
-    export env=${boomiEnv}
-    echo "environment is ${boomiEnv}"
-    echo "purge Days is ${purgeHistoryDays}"
-    echo "max Memory is ${maxMem}"
-    export atomType=${atomType}
-    export defaultRegion=${defaultRegion}
-    export defaultAWSRegion=${region} 
-    #export userName=${userName}
-    #export apiToken=${apiToken}
-    export classification=${classification}
-    export region=${region}
-    export DataDogAPIKey=${DataDogAPIKey}
-    cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
-    source bin/efsMount.sh efsMount=${EfsMount} defaultAWSRegion=${region}
-    #export authToken="BOOMI_TOKEN.$userName:$apiToken"
-    export authToken=${authToken}
-	export client=${client}
-	export group=${group}	
-	env
-    source bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${classification} accountId=${accountId}	purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${defaultRegion}
-else
-    # GCP/Azure platforms
-    cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
-    source bin/exports.sh
+cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
+source bin/exports.sh
+if [ -n "$efsMount" ] ; then
+    echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount=${efsMount}
-    echo "run init.sh..."
-    sudo su - $USR -c "cd ~/boomi/boomicicd/boomiinstall-cli/cli/scripts;export authToken=${boomiAtmosphereToken};. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}"
 fi
+export authToken=${boomiAtmosphereToken}
+echo "run init.sh..."
+. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}
 EOF
 
 echo "boomi install complete..."
 
-if [ -n ${platform} ] ; then
+if [ -n "$platform" ] ; then
   touch /etc/boomi_runtime_installer
   echo "boomi_runtime_installer flag created"
 fi
