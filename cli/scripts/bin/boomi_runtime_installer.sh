@@ -18,13 +18,6 @@ echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
-echo "client : ${client}"
-echo "group : ${group}"
-echo "region : ${defaultRegion}"
-echo "classification is: ${boomiClassification}"
-echo "Git Org Name: ${GitOrgName}"
-echo "BoomiAccountId is: ${boomiAccountId}"
-
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -77,7 +70,7 @@ sudo apt-get install -y libxml2-utils -y
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/$GitOrgName/boomiinstall-cli
+git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 set +e
 
@@ -124,15 +117,13 @@ whoami
 sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
+source bin/exports.sh
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount=${efsMount}
 fi
 export authToken=${boomiAtmosphereToken}
-export client=${client}
-export group=${group}
 echo "run init.sh..."
-env
 . bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}
 EOF
 
