@@ -17,6 +17,21 @@ fi
 export h1="Content-Type: application/json"
 export h2="Accept: application/json"
 export WORKSPACE=`pwd`
+
+echo "Cloud Platform : ${platform}"
+echo "Atom Name : ${atomName}"
+echo "Atom Type : ${atomType}"
+echo "Boomi Environment : ${boomiEnv}"
+echo "purge Days : ${purgeHistoryDays}"
+echo "max Memory : ${maxMem}"
+echo "efsMount : ${efsMount}"
+echo "authToken : ${boomiAtmosphereToken}"
+echo "client : ${client}"
+echo "group : ${group}"
+echo "region : ${region}"
+echo "classification is: ${boomiClassification}"
+echo "Git Org Repo Name: ${GitRepoName}"
+
 # Keys that can change
 export VERBOSE="false" # Bash verbose output; set to true only for testing, will slow execution.
 export SLEEP_TIMER=0.2 # Delays curl request to the platform to set the rate under 5 requests/second
