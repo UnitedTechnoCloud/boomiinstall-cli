@@ -18,6 +18,11 @@ echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
+echo "githubToken : ${githubToken}"
+echo "client : ${client}"
+echo "group : ${group}"
+echo "region : ${region}"
+
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -124,7 +129,8 @@ if [ -n "$efsMount" ] ; then
 fi
 export authToken=${boomiAtmosphereToken}
 echo "run init.sh..."
-. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}
+env
+. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} defaultRegion=${region}
 EOF
 
 echo "boomi install complete..."
