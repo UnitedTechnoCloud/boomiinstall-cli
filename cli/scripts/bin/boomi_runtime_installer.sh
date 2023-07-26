@@ -22,6 +22,8 @@ echo "githubToken : ${githubToken}"
 echo "client : ${client}"
 echo "group : ${group}"
 echo "region : ${region}"
+echo "classification is: ${boomiClassification}"
+echo "Git Org Repo Name: ${GitRepoName}"
 
 
 #  create boomi user
@@ -122,7 +124,6 @@ whoami
 sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
-source bin/exports.sh
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount=${efsMount}
