@@ -24,6 +24,7 @@ echo "group : ${group}"
 echo "region : ${region}"
 echo "classification is: ${boomiClassification}"
 echo "Git Org Repo Name: ${GitRepoName}"
+echo "BoomiAccountId is: ${boomiAccountId}"
 
 
 #  create boomi user
