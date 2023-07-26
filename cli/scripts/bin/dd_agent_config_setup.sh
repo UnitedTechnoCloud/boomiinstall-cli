@@ -10,7 +10,7 @@ bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agen
 cat <<EOF >> /etc/datadog-agent/datadog.yaml
 tags:
  - client:${client}
- - brand:${brand}
+ - group:${group}
  - environment:${environment}
  - pod_name:${ATOM_LOCALHOSTID}
  - container_name:${BOOMI_CONTAINERNAME}

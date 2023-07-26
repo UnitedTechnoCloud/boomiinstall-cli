@@ -6,6 +6,7 @@ OPT_ARGUMENTS=(mountPoint serviceUserName groupName defaultAWSRegion)
 authToken="BOOMI_TOKEN."
 inputs "$@"
 
+echo "Default Region is: ${defaultRegion}"
 if [ "$?" -gt "0" ]
 then
        return 255;
