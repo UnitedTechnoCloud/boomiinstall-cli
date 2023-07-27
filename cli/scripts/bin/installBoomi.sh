@@ -7,16 +7,6 @@ TMP_DIR="${tmpDir}"
 WORK_DIR="${workDir}"
 unset ATOM_HOME
 
-echo "Atom Name : ${atomName}"
-echo "Atom Type : ${atomType}"
-echo "Boomi Environment : ${boomiEnv}"
-echo "purge Days : ${purgeHistoryDays}"
-echo "max Memory : ${maxMem}"
-echo "efsMount : ${efsMount}"
-echo "client : ${client}"
-echo "group : ${group}"
-echo "classification is: ${classification}"
-
 if [[ "$atomType" = "ATOM" ]]
 	then
 		# install atom on the local drive 
