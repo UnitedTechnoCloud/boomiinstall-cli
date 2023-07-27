@@ -70,7 +70,7 @@ sudo apt-get install -y libxml2-utils -y
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+git clone https://github.com/$GitOrgName/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 set +e
 
@@ -122,6 +122,8 @@ if [ -n "$efsMount" ] ; then
     source bin/efsMount.sh efsMount=${efsMount}
 fi
 export authToken=${boomiAtmosphereToken}
+export client=${client}
+export group=${group}
 echo "run init.sh..."
 . bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}
 EOF
