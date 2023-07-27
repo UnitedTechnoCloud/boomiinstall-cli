@@ -6,9 +6,6 @@ OPT_ARGUMENTS=(mountPoint serviceUserName groupName defaultAWSRegion platform)
 authToken="BOOMI_TOKEN."
 inputs "$@"
 
-#source /home/boomi/.profile
-echo "Default Region is: ${defaultAWSRegion}"
-echo "Platform is: ${platform}"
 if [ "$?" -gt "0" ]
 then
        return 255;

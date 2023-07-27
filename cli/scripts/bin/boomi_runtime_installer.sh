@@ -37,9 +37,6 @@ sudo sysctl -w net.core.rmem_max=8388608
 sudo sysctl -w net.core.wmem_max=8388608
 sudo sysctl -w net.core.rmem_default=65536
 sudo sysctl -w net.core.wmem_default=65536
-sudo iptables -A INPUT -p tcp --dport 7800 -j ACCEPT
-sudo iptables -A INPUT -p tcp --dport 9090 -j ACCEPT
-sudo iptables -A INPUT -p tcp --dport 5003 -j ACCEPT
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
@@ -130,7 +127,6 @@ echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
-	echo "Platform is : ${platform}"
     source bin/efsMount.sh efsMount=${efsMount} defaultAWSRegion=${EC2_REGION} platform=${platform}
 fi
 export authToken=${boomiAtmosphereToken}
