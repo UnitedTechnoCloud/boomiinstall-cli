@@ -18,6 +18,7 @@ echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
+echo "region : ${region}"
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -123,7 +124,7 @@ echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
-    source bin/efsMount.sh efsMount=${efsMount}
+    source bin/efsMount.sh efsMount=${efsMount} defaultRegion=${region}
 fi
 export authToken=${boomiAtmosphereToken}
 export client=${client}
