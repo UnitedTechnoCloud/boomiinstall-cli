@@ -83,10 +83,6 @@ curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o atom_install64.s
 curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_install64.sh && chmod +x "molecule_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
 cp scripts/home/* /home/$USR
-
-echo "downloaded files are.."
-echo `pwd`
-ls -lrth
 # Create the .profile
 cd /home/$USR
 cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
