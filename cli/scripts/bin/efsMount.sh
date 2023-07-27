@@ -29,6 +29,7 @@ if [[ -z "${defaultAWSRegion}" ]]; then
 	defaultAWSRegion="us-east-2";
 fi
 
+sudo mkdir -p "${mountPoint}"
 sudo mkdir -p "${mountPoint}/boomi"
 
 sudo chown -R $serviceUserName "${mountPoint}"
