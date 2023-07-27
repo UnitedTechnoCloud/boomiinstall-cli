@@ -77,6 +77,7 @@ echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
 git clone --single-branch --branch changes_for_aws https://github.com/${GitOrgName}/boomiinstall-cli
 #git clone https://github.com/$GitOrgName/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
+chmod +x scripts/bin/*.*
 set +e
 
 # download Boomi installers
