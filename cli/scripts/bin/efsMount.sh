@@ -7,7 +7,7 @@ authToken="BOOMI_TOKEN."
 inputs "$@"
 
 echo "Default Region is: ${defaultAWSRegion}"
-echo "Platform is: ${platform}
+echo "Platform is: ${platform}"
 if [ "$?" -gt "0" ]
 then
        return 255;
