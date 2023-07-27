@@ -89,13 +89,6 @@ echo `pwd`
 ls -lrth
 # Create the .profile
 cd /home/$USR
-# echo "export JAVA_HOME='/usr/bin/java'" > .profile
-# echo "export JDK_HOME='/usr/bin/java'" >> .profile
-# echo "export JOURNAL_STREAM='9:132367794'" >> .profile
-# echo "export LANG='C.utf8'" >> .profile
-# echo "export LOGNAME='root'" >> .profile
-# echo "export SHLVL='2'" >> .profile           
-# echo "export color_prompt=true" >> .profile
 cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
 echo "export platform=${platform}" >> .profile            
 chmod u+x /home/$USR/.profile
