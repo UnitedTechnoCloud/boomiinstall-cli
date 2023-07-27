@@ -99,7 +99,8 @@ cd /home/$USR
 # echo "export LOGNAME='root'" >> .profile
 # echo "export SHLVL='2'" >> .profile           
 # echo "export color_prompt=true" >> .profile
-cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .            
+cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
+echo "export platform=${platform}" >> .profile            
 chmod u+x /home/$USR/.profile
 echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
 echo "	. /home/$USR/.profile" >> /home/$USR/.bashrc
@@ -129,6 +130,7 @@ echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
+	echo "Platform is : ${platform}"
     source bin/efsMount.sh efsMount=${efsMount} defaultAWSRegion=${EC2_REGION} platform=${platform}
 fi
 export authToken=${boomiAtmosphereToken}
