@@ -91,18 +91,19 @@ echo `pwd`
 ls -lrth
 # Create the .profile
 cd /home/$USR
-echo "export JAVA_HOME='/usr/bin/java'" > .profile
-echo "export JDK_HOME='/usr/bin/java'" >> .profile
-echo "export JOURNAL_STREAM='9:132367794'" >> .profile
-echo "export LANG='C.utf8'" >> .profile
-echo "export LOGNAME='root'" >> .profile
-echo "export SHLVL='2'" >> .profile           
-echo "export color_prompt=true" >> .profile            
+# echo "export JAVA_HOME='/usr/bin/java'" > .profile
+# echo "export JDK_HOME='/usr/bin/java'" >> .profile
+# echo "export JOURNAL_STREAM='9:132367794'" >> .profile
+# echo "export LANG='C.utf8'" >> .profile
+# echo "export LOGNAME='root'" >> .profile
+# echo "export SHLVL='2'" >> .profile           
+# echo "export color_prompt=true" >> .profile
+cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .            
 chmod u+x /home/$USR/.profile
 echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
 echo "	. /home/$USR/.profile" >> /home/$USR/.bashrc
 echo "fi" >> /home/$USR/.bashrc
-cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
+
 if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
     EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
@@ -127,7 +128,7 @@ echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
-    source bin/efsMount.sh efsMount=${efsMount} defaultAWSRegion=${region} platform=${platform}
+    source bin/efsMount.sh efsMount=${efsMount} defaultAWSRegion=${EC2_REGION} platform=${platform}
 fi
 export authToken=${boomiAtmosphereToken}
 export client=${client}
