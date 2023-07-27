@@ -134,7 +134,7 @@ export authToken=${boomiAtmosphereToken}
 export client=${client}
 export group=${group}
 echo "run init.sh..."
-. bin/init.sh atomType=${atomType} atomName=${atomName} env=${boomiEnv} classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}
+. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem}
 EOF
 
 echo "boomi install complete..."
