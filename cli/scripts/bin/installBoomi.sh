@@ -6,7 +6,6 @@ JAVA_HOME="${javaHome}"
 TMP_DIR="${tmpDir}"
 WORK_DIR="${workDir}"
 unset ATOM_HOME
-
 if [[ "$atomType" = "ATOM" ]]
 	then
 		# install atom on the local drive 
