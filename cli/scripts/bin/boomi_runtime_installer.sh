@@ -82,6 +82,9 @@ curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_ins
 curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
 cp scripts/home/* /home/$USR
 
+echo "downloaded files are.."
+echo `pwd`
+ls -lrth
 # Create the .profile
 cd /home/$USR
 echo "export JAVA_HOME='/usr/bin/java'" > .profile
