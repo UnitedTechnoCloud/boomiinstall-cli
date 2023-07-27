@@ -2,7 +2,7 @@
 # mount efs
 source bin/common.sh
 ARGUMENTS=(efsMount)
-OPT_ARGUMENTS=(mountPoint serviceUserName groupName defaultAWSRegion)
+OPT_ARGUMENTS=(mountPoint serviceUserName groupName defaultAWSRegion platform)
 authToken="BOOMI_TOKEN."
 inputs "$@"
 
