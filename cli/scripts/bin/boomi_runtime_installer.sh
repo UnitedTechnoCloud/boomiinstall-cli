@@ -72,7 +72,7 @@ sudo apt-get install -y libxml2-utils -y
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/$GitOrgName/boomiinstall-cli..."
-git clone https://github.com/$GitOrgName/boomiinstall-cli
+git clone --single-branch --branch changes_for_aws https://github.com/${GitOrgName}/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 chmod +x scripts/bin/*.*
 set +e
