@@ -35,8 +35,8 @@ sudo chown -R $groupName "${mountPoint}"
 
 ## update fstab
 if [ "${platform}" = "aws" ]; then
-	sudo mount -t efs -o tls ${efsMount}.efs.${defaultAWSRegion}.amazonaws.com:/ "${mountPoint}"
-	echo "${efsMount}.efs.${defaultAWSRegion}.amazonaws.com:/ $mountPoint nfs4 defaults,_netdev 0 0" | sudo tee -a /etc/fstab
+	sudo mount -t efs -o tls ${efsMount}:/ "${mountPoint}"
+	echo "${efsMount}:/ $mountPoint nfs4 defaults,_netdev 0 0" | sudo tee -a /etc/fstab
 else
 	# GCP/Azure platforms
 	echo "mounting ${efsMount}..."

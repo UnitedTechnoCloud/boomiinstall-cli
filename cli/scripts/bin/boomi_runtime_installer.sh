@@ -116,8 +116,9 @@ sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
 if [ -n "$efsMount" ] ; then
+	export efsMount=${efsMount}.efs.${EC2_REGION}.amazonaws.com
     echo "setting EFS Mount:${efsMount} ..."
-    source bin/efsMount.sh efsMount=${efsMount} defaultAWSRegion=${EC2_REGION} platform=${platform}
+    source bin/efsMount.sh efsMount=${efsMount} platform=${platform}
 fi
 export authToken=${boomiAtmosphereToken}
 export client=${client}
