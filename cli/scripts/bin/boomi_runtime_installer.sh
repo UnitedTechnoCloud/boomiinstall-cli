@@ -18,7 +18,6 @@ echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
-echo "region : ${region}"
 echo "Git Org Name : ${GitOrgName}"
 
 #  create boomi user
