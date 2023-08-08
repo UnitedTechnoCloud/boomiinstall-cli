@@ -71,7 +71,8 @@ sudo apt-get install -y libxml2-utils -y
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/$GitOrgName/boomiinstall-cli..."
-git clone https://github.com/$GitOrgName/boomiinstall-cli
+git clone --single-branch --branch changes_for_aws https://github.com/${GitOrgName}/boomiinstall-cli
+#git clone https://github.com/$GitOrgName/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 chmod +x scripts/bin/*.*
 chmod +x scripts/home/*.*
@@ -115,9 +116,8 @@ sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
 if [ -n "$efsMount" ] ; then
-	export efsMount=${efsMount}.efs.${EC2_REGION}.amazonaws.com
     echo "setting EFS Mount:${efsMount} ..."
-    source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
+    . bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
 fi
 export authToken=${boomiAtmosphereToken}
 export client=${client}
