@@ -35,13 +35,17 @@ init_config:
   collect_default_metrics: true
   java_bin_path: /usr/bin/java
   conf:
-  - include:
+    - include:
         domain: com.boomi.container.services
         type:
-        - ExecutionManager
-        - MessageQueue
-        - ResourceManager
-        - Scheduler
+          - ExecutionManager
+          - MessageQueue
+          - ResourceManager
+          - Scheduler
+    - include:
+        domain: java.lang
+        attribute:
+          - SystemLoadAverage
 instances:
   - host: 127.0.0.1
     port: 5003
