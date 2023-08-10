@@ -29,10 +29,7 @@ if [[ -z "${defaultAWSRegion}" ]]; then
 	defaultAWSRegion="us-east-2";
 fi
 
-sudo mkdir -p "${mountPoint}/boomi"
-
-sudo chown -R $serviceUserName "${mountPoint}"
-sudo chown -R $groupName "${mountPoint}"
+sudo chown -R $serviceUserName:$groupName "${mountPoint}"
 
 ## update fstab
 if [ "${platform}" = "aws" ]; then
