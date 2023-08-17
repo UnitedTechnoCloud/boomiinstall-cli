@@ -43,3 +43,4 @@ else
 	echo "${efsMount} $mountPoint nfs4 defaults,_netdev 0 0" | sudo tee -a /etc/fstab
 fi
 sudo mount -a
+sudo chown -R $serviceUserName:$groupName "${mountPoint}"
