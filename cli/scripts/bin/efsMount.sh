@@ -29,7 +29,6 @@ if [[ -z "${defaultAWSRegion}" ]]; then
 	defaultAWSRegion="us-east-2";
 fi
 
-sudo chown -R $serviceUserName:$groupName "${mountPoint}"
 
 ## update fstab
 if [ "${platform}" = "aws" ]; then
