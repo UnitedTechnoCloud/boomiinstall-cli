@@ -74,8 +74,8 @@ sudo apt-get install -y libxml2-utils -y
 
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
-echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+#echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
+#git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 chmod +x scripts/bin/*.*
 chmod +x scripts/home/*.*
