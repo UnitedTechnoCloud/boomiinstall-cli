@@ -58,6 +58,11 @@ if [ "${platform}" = "aws" ]; then
     cd /tmp/efs-utils
     ./build-deb.sh
     sudo apt-get -y install ./build/amazon-efs-utils*deb
+elif [ "${platform}" = "azure" ]; then
+    curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    # download smb utils
+    sudo apt update
+    sudo apt install cifs-utils    
 else
     echo "awscli install not required!"
 fi
@@ -69,8 +74,8 @@ sudo apt-get install -y libxml2-utils -y
 
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
-echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+#echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
+#git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 chmod +x scripts/bin/*.*
 chmod +x scripts/home/*.*
@@ -95,6 +100,13 @@ if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
     EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
     echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile	
+    source /home/$USR/.profile
+fi
+
+if [ "${platform}" = "azure" ]; then
+    echo "export RESOURCE_GROUP_NAME=${RESOURCE_GROUP_NAME}" >> .profile
+    echo "export STORAGE_ACCOUNT_NAME=${STORAGE_ACCOUNT_NAME}" >> .profile
+    echo "export FILE_SHARE_NAME=${FILE_SHARE_NAME}" >> .profile
     source /home/$USR/.profile
 fi
             
