@@ -37,8 +37,7 @@ if [ "${platform}" = "aws" ]; then
 	sudo mount -t efs -o tls ${efsMount}.efs.${EC2_REGION}.amazonaws.com:/ "${mountPoint}"
 	echo "${efsMount}.efs.${EC2_REGION}.amazonaws.com:/ $mountPoint nfs4 defaults,_netdev 0 0" | sudo tee -a /etc/fstab
 elif [ "${platform}" = "azure" ]; then
-	export MNT_PATH=$mountPoint
-	source bin/smbMount.sh	
+	echo "${efsMount} $mountPoint nfs vers=4,minorversion=1,sec=sys 0 0" | sudo tee -a /etc/fstab
 else
 	# GCP/Azure platforms
 	echo "mounting ${efsMount}..."
