@@ -36,9 +36,6 @@ if [ "${platform}" = "aws" ]; then
         export EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"	
 	sudo mount -t efs -o tls ${efsMount}.efs.${EC2_REGION}.amazonaws.com:/ "${mountPoint}"
 	echo "${efsMount}.efs.${EC2_REGION}.amazonaws.com:/ $mountPoint nfs4 defaults,_netdev 0 0" | sudo tee -a /etc/fstab
-elif [ "${platform}" = "azure" ]; then
-	sudo mount -t nfs -o rw,hard,rsize=262144,wsize=262144,sec=sys,vers=4.1,tcp ${efsMount} ${mountPoint}
-        echo "${efsMount} $mountPoint nfs bg,rw,hard,rsize=262144,wsize=262144,vers=4.1,tcp,_netdev 0 0" | sudo tee -a /etc/fstab	
 else
 	# GCP/Azure platforms
 	echo "mounting ${efsMount}..."
