@@ -53,7 +53,9 @@ if [[ "$atomType" = "ATOM" ]]
 		./bin/installGateway.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 
 	elif [[ "$atomType" = "MOLECULE" ]]
-	then	
+	then
+	        echo "Molecule environment variables: "
+	        env	
 		ATOM_HOME=${INSTALL_DIR}/Molecule_${atomName}
 		if [[ -d "${ATOM_HOME}" ]]
 		then
@@ -62,6 +64,7 @@ if [[ "$atomType" = "ATOM" ]]
         fi
 
 		source bin/installerToken.sh atomType=${atomType}
+		echo "Token ID is: ${tokenId}"
 		./bin/installMolecule.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 		if [ ! -z "${env}" ]; 
 		then
