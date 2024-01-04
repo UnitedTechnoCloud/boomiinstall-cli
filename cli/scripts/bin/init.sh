@@ -18,6 +18,9 @@ export h1="Content-Type: application/json"
 export h2="Accept: application/json"
 export WORKSPACE=`pwd`
 
+echo "env are: "
+env
+
 echo "Cloud Platform : ${platform}"
 echo "Atom Name : ${atomName}"
 echo "Atom Type : ${atomType}"
