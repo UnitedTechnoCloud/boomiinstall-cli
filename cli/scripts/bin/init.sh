@@ -24,7 +24,7 @@ env
 echo "Cloud Platform : ${platform}"
 echo "Atom Name : ${atomName}"
 echo "Atom Type : ${atomType}"
-echo "Boomi Environment : ${boomiEnv}"
+echo "Boomi Environment : ${env}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
