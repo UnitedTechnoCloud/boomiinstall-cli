@@ -19,7 +19,7 @@ if [ ! -z "$cloudId" ]
 then
 	saveCloudId=$cloudId
 	ARGUMENTS=(atomType cloudId)
-  JSON_FILE=json/installerTokenCloud.json
+        JSON_FILE=json/installerTokenCloud.json
 fi
 
 createJSON
