@@ -91,6 +91,7 @@ cat <<EOF >>${ATOM_HOME}/bin/atom.vmoptions
 -XX:+ParallelRefProcEnabled
 -XX:+UseStringDeduplication
 -XX:+HeapDumpOnOutOfMemoryError
+-Duser.timezone=America/New_York
 -Dcom.sun.management.jmxremote.authenticate=false
 -Dcom.sun.management.jmxremote.ssl=false
 -Dcom.sun.management.jmxremote.local.only=false
