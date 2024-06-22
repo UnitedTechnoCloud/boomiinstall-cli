@@ -29,7 +29,7 @@ echo "install python..."
 sudo yum install -y zip -y
 sudo yum install python3-pip -y
 python3 --version
-sudo yum install -y ca-certificates curl gnupg  lsb-release -y
+sudo yum install -y ca-certificates curl gnupg -y
 
 # set ulimits
 sudo sysctl -w net.core.rmem_max=8388608
@@ -43,16 +43,31 @@ printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nofile" "8192" | sudo tee -a /etc/s
 
 # install java
 echo "install java..."
-sudo yum update && sudo yum install -y java-common -y
-curl -fssL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.deb -o amazon-corretto-11-x64-linux-jdk.deb
-sudo dpkg --install amazon-corretto-11-x64-linux-jdk.deb
-cd /usr/lib/jvm/
-sudo ln -sf java-11-amazon-corretto/ jre
-sudo apt-get -y install git binutils -y
+yum install -y amazon-linux-extras
+amazon-linux-extras install -y java-openjdk11
+amazon-linux-extras install -y collectd
+yum install -y collectd-java
+yum install -y collectd-generic-jmx
+
+# Disable SELinux for collectd
+echo "Disabling SELinux..."
+setenforce 0
+sed -i "s%SELINUX=enforcing%SELINUX=disabled%g" /etc/selinux/config
+
+# Looking for libjvm.so from the java-openjdk11 package that was installed
+LIBJVM_SYMLINK=/usr/lib64/libjvm.so
+if [ -L ${LIBJVM_SYMLINK} ] && [ -e ${LIBJVM_SYMLINK} ]; then
+	    echo "Synlink to libjvm.so already exists. Skipping..."
+    else
+	        libjvm_location=$(sudo find / -name libjvm.so | grep -m 1 'java-11-openjdk')
+		    echo "libjvm_location: $libjvm_location"
+		        sudo ln -s $libjvm_location /usr/lib64/libjvm.so
+fi
+
 set -e
 ## download boomicicd CLI 
 sudo yum install -y jq -y
-sudo yum install -y libxml2-utils -y 
+sudo yum install libxml2 -y
 sudo yum install -y nfs-utils
 
 mkdir -p  /home/$USR/boomi/boomicicd
