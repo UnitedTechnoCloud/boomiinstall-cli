@@ -24,12 +24,12 @@ sudo groupadd -g 5151 -r $GRP
 sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
 sudo usermod -aG sudo boomi
 echo "boomi ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
-sudo apt-get -y update
+sudo yum update -y && sudo yum upgrade -y
 echo "install python..."
-sudo apt-get install -y zip -y
-sudo apt-get install python3-pip -y
+sudo yum install -y zip -y
+sudo yum install python3-pip -y
 python3 --version
-sudo apt-get install -y ca-certificates curl gnupg  lsb-release -y
+sudo yum install -y ca-certificates curl gnupg  lsb-release -y
 
 # set ulimits
 sudo sysctl -w net.core.rmem_max=8388608
@@ -43,34 +43,22 @@ printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nofile" "8192" | sudo tee -a /etc/s
 
 # install java
 echo "install java..."
-sudo apt-get update && sudo apt-get install -y java-common -y
+sudo yum update && sudo yum install -y java-common -y
 curl -fssL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.deb -o amazon-corretto-11-x64-linux-jdk.deb
 sudo dpkg --install amazon-corretto-11-x64-linux-jdk.deb
 cd /usr/lib/jvm/
 sudo ln -sf java-11-amazon-corretto/ jre
 sudo apt-get -y install git binutils -y
-
-if [ "${platform}" = "aws" ]; then
-    sudo apt-get install -y awscli
-    sudo apt-get -y install git binutils
-    cd /tmp
-    git clone https://github.com/aws/efs-utils
-    cd /tmp/efs-utils
-    ./build-deb.sh
-    sudo apt-get -y install ./build/amazon-efs-utils*deb
-else
-    echo "awscli install not required!"
-fi
-
 set -e
 ## download boomicicd CLI 
-sudo apt-get install -y jq -y
-sudo apt-get install -y libxml2-utils -y
+sudo yum install -y jq -y
+sudo yum install -y libxml2-utils -y 
+sudo yum install -y nfs-utils
 
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli --branch amazon_linux --single-branch
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 chmod +x scripts/bin/*.*
 chmod +x scripts/home/*.*
