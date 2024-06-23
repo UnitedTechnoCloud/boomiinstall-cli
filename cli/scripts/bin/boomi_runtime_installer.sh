@@ -73,6 +73,7 @@ sudo yum install -y nfs-utils
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
+rm -rf boomiinstall-cli
 git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli --branch amazon_linux --single-branch
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
 chmod +x scripts/bin/*.*
