@@ -120,7 +120,7 @@ if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
 fi
-export authToken=${boomiAtmosphereToken}
+export authToken=${boomiAtomsphereToken}
 export client=${client}
 export group=${group}
 env
