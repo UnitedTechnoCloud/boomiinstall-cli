@@ -49,6 +49,7 @@ sudo dpkg --install amazon-corretto-11-x64-linux-jdk.deb
 cd /usr/lib/jvm/
 sudo ln -sf java-11-amazon-corretto/ jre
 sudo apt-get -y install git binutils -y
+sudo apt-get -y install nfs-common
 
 if [ "${platform}" = "aws" ]; then
     sudo apt-get install -y awscli
