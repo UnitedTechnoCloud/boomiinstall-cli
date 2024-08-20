@@ -99,7 +99,12 @@ if [ "${platform}" = "aws" ]; then
     echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile	
     source /home/$USR/.profile
 fi
-            
+
+if [ -n "$installDir" ] ; then
+      mkdir -p /opt/boomi/local
+      chown -R $USR:$GRP /opt/boomi/local 
+fi
+
 # set up local directories for install
 mkdir -p /mnt/boomi
 mkdir -p /usr/local/boomi/work
