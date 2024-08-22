@@ -40,6 +40,7 @@ if [ "${platform}" = "aws" ]; then
 else
 	# GCP/Azure platforms
 	echo "mounting ${efsMount}..."
+        sudo mount -t nfs -o rw,hard,rsize=262144,wsize=262144,sec=sys,vers=4.1,tcp ${efsMount} $mountPoint
 	echo "${efsMount} $mountPoint nfs4 defaults,_netdev 0 0" | sudo tee -a /etc/fstab
 fi
 sudo mount -a
