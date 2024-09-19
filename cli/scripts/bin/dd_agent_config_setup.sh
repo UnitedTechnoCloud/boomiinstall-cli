@@ -3,6 +3,7 @@
 export DD_AGENT_MAJOR_VERSION=${DatadogAgentMajorVersion}
 export DD_API_KEY=${DataDogAPIKey}
 export DD_SITE="us3.datadoghq.com"
+export DD_URL="https://us3.datadoghq.com"
 export DD_DD_URL="https://us3.datadoghq.com"
 #bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
 bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agent7.sh)"
