@@ -125,6 +125,8 @@ if [ -n "$efsMount" ] ; then
     source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
 fi
 
+export authToken=${boomiAtomsphereToken}
+
 if [ -z "$authToken" ]; then
  authToken="$boomiAtmosphereToken"
 fi
@@ -132,7 +134,6 @@ fi
 if [ -z "$authToken" ]; then 
  authToken="BOOMI_TOKEN."
 fi
-# export authToken=${boomiAtomsphereToken}
 
 export client=${client}
 export group=${group}
