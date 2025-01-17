@@ -126,6 +126,7 @@ if [ -n "$efsMount" ] ; then
 fi
 
 export authToken=${boomiAtomsphereToken}
+authToken=${boomiAtomsphereToken}
 echo "authToken1 : ${boomiAtomsphereToken}"
 echo "authToken2 : $authToken"
 env
