@@ -138,7 +138,7 @@ fi
 if [ -z "$authToken" ]; then 
  authToken="BOOMI_TOKEN."
 fi
-echo "authToken3 : $authToken"
+export authToken=${boomiAtomsphereToken}
 export client=${client}
 export group=${group}
 env
