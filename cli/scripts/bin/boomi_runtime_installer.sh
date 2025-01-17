@@ -127,6 +127,7 @@ fi
 
 export authToken=${boomiAtomsphereToken}
 echo "authToken1 : ${boomiAtomsphereToken}"
+echo "authToken2 : ${authToken}"
 
 if [ -z "$authToken" ]; then
  authToken="$boomiAtmosphereToken"
@@ -135,7 +136,7 @@ fi
 if [ -z "$authToken" ]; then 
  authToken="BOOMI_TOKEN."
 fi
-echo "authToken2 : ${boomiAtomsphereToken}"
+echo "authToken3 : ${authToken}"
 export client=${client}
 export group=${group}
 env
