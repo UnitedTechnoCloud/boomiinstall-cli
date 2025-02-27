@@ -141,6 +141,8 @@ fi
 # authToken="BOOMI_TOKEN."
 #fi
 export authToken=${boomiAtmosphereToken}
+echo "authToken: $authToken"
+echo "boomiAtmosphereToken: ${boomiAtmosphereToken}"
 export client=${client}
 export group=${group}
 env
