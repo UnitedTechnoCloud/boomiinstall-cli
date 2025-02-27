@@ -19,7 +19,7 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
 echo "installDir : ${installDir}"
-echo "Auth Token : ${boomiAtmosphereToken}"
+echo "Auth Token : ${boomiAtomsphereToken}"
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -140,9 +140,9 @@ fi
 #if [ -z "$authToken" ]; then 
 # authToken="BOOMI_TOKEN."
 #fi
-export authToken=${boomiAtmosphereToken}
+export authToken=${boomiAtomsphereToken}
 echo "authToken: $authToken"
-echo "boomiAtmosphereToken: ${boomiAtmosphereToken}"
+echo "boomiAtmosphereToken: ${boomiAtomsphereToken}"
 export client=${client}
 export group=${group}
 env
