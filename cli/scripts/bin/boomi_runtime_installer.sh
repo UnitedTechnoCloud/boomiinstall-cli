@@ -19,6 +19,7 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
 echo "installDir : ${installDir}"
+echo "Auth Token : ${boomiAtmosphereToken}"
 
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
@@ -41,6 +42,13 @@ printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nproc" "65535" | sudo tee -a /etc/s
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
+
+sudo ufw allow 45588
+sudo ufw allow 7800
+sudo ufw allow 8077
+sudo ufw allow 18077
+sudo ufw allow 17005
+sudo ufw allow 18082
 
 # install java
 echo "install java..."
