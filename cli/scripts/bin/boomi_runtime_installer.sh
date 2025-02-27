@@ -111,10 +111,13 @@ mkdir -p /mnt/boomi
 mkdir -p /usr/local/boomi/work
 mkdir -p /usr/local/boomi/tmp
 mkdir -p /usr/local/bin
+mkdir -p /data/tmp
+mkdir -p /data/work
 chown -R $USR:$GRP /mnt/boomi/
 chown -R $USR:$GRP /home/$USR/
 chown -R $USR:$GRP /usr/local/boomi/
 chown -R $USR:$GRP /usr/local/bin/
+chown -R $USR:$GRP /data
 whoami
 
 # install boomi
