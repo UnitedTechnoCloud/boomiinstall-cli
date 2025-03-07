@@ -7,7 +7,7 @@ if [ -n "$platform" ] ; then
     fi
 fi
 
-echo "begin boomi install..."
+echo "begin boomi install with new efs script main branch..."
 USR=boomi
 GRP=boomi
 whoami
