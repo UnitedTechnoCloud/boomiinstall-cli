@@ -186,6 +186,7 @@ source /home/$serviceUserName/.profile
 # install Boomi only if the atom binaries are not installed
 if [[ ! -f ${ATOM_HOME}/bin/atom ]]
 then
+        sudo chown -R $serviceUserName:$groupName "${mountPoint}"
 	source bin/installBoomi.sh
 else
 	echo "Atom is already installed at $ATOM_HOME, will install only the start up service"	
