@@ -5,7 +5,7 @@ source bin/common.sh
 # mandatory arguments
 unset atomType ATOM_HOME
 ARGUMENTS=(atomName accountId classification)
-OPT_ARGUMENTS=(proxyHost proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group)
+OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group)
 
 inputs "$@"
 
@@ -115,6 +115,10 @@ export sharedWebURL=$(echo "$sharedWebURL" | sed 's/\./\\./g')
 if [ -z "${serviceUserName}" ]
 then
      export serviceUserName="boomi"  
+fi
+
+if [[ -z "${groupName}" ]]; then
+	groupName="boomi";
 fi
 
 if [ -z "${mountPoint}" ]
