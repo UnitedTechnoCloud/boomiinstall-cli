@@ -19,7 +19,8 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
 echo "installDir : ${installDir}"
-
+echo "workDir : ${workDir}"
+echo "tmpDir : ${tmpDir}"
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
 sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
