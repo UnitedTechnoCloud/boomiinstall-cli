@@ -19,7 +19,8 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
 echo "installDir : ${installDir}"
-
+echo "workDir : ${workDir}"
+echo "tmpDir : ${tmpDir}"
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
 sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
@@ -140,7 +141,7 @@ export client=${client}
 export group=${group}
 env
 echo "run init.sh..."
-. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir}
+. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} workDir=${workDir} tmpDir=${tmpDir}
 EOF
 
 echo "boomi install complete..."
