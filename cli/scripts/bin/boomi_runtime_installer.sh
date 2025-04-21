@@ -69,7 +69,7 @@ set -e
 ## download boomicicd CLI 
 sudo apt-get install -y jq -y
 sudo apt-get install -y libxml2-utils -y
-sudo apt-get install tshark -y
+# sudo apt-get install tshark -y
 
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
