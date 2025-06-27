@@ -28,6 +28,7 @@ while true; do
 	  if [[ -z "$resolved_ip" ]]; then
 		  echo "$(date): No IP resolved for $domain" >&2
 		  all_private=false
+		  aws sns publish --region "$AWS_REGION" --topic-arn "$SNS_TOPIC_ARN" --subject "DNS Warning on $HOSTNAME" --message "$DNS_NAME Not Resolved to Any IP: $resolved_ip."		  
 		  continue
 	  fi
 
