@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CONFIGURATION
-DOMAINS=("RDBMS9SRVBELL" "flow-sql-test-01" "BIDSQL1N1" "AZR-SVR-APP-D01" "AZR-SVR-SQL-P02" "flow-sql-prod-01" "GRB-OT-SQL-P01")  # List of DNS names
+DOMAINS=("RDBMS9SRVBELL" "flow-sql-test-01" "BIDSQL1N1" "AZR-SVR-APP-D01" "AZR-SVR-SQL-P02" "flow-sql-prod-01" "GRB-OT-SQL-P01")
 SNS_TOPIC_ARN="arn:aws:sns:ca-central-1:456486178888:boomi-sanimax-ATOM-dev-runtime-stack-NotificationTopic-0l1lG1GjuUNR"
 AWS_REGION="ca-central-1"
 HOSTNAME=$(hostname)
