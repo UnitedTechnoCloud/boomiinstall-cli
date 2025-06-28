@@ -55,5 +55,8 @@ while true; do
   if $all_private; then
 	  echo "$(date): All domains resolved to private IPs.Done."
 	  break
+   else
+	  echo "$(date): All domains not resolved to private IPs.Done."
+	  break   
   fi
 done
