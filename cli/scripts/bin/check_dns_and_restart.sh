@@ -28,6 +28,14 @@ while true; do
 	  if [[ -z "$resolved_ip" ]]; then
 		  echo "$(date): No IP resolved for $domain" >&2
 		  all_private=false
+                  sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
+                  [Resolve]
+                  DNS=10.207.1.40
+                  FallbackDNS=169.254.169.253 8.8.8.8
+                  DNSStubListener=yes
+                  Domains=~sanimax.int ~ca-central-1.compute.internal ~windows.database.net
+                  EOF'    
+		  sudo systemctl restart systemd-resolved		  
 		  aws sns publish --region "$AWS_REGION" --topic-arn "$SNS_TOPIC_ARN" --subject "DNS Warning on $HOSTNAME" --message "$DNS_NAME Not Resolved to Any IP: $resolved_ip."		  
 		  continue
 	  fi
@@ -36,11 +44,16 @@ while true; do
 
 	  if is_private_ip "$resolved_ip"; then
 		  echo "$(date): $domain resolved to private IP."
-		  aws sns publish --region "$AWS_REGION" --topic-arn "$SNS_TOPIC_ARN" --subject "DNS Warning on $HOSTNAME" --message "$DNS_NAME Resolved to Private IP: $resolved_ip."		
 	  else
 		  echo "$(date): $domain not resolved. Restarting systemd-resolved.."
 		  all_private=false
-
+                  sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
+                  [Resolve]
+                  DNS=10.207.1.40
+                  FallbackDNS=169.254.169.253 8.8.8.8
+                  DNSStubListener=yes
+                  Domains=~sanimax.int ~ca-central-1.compute.internal ~windows.database.net
+                  EOF'
 		  # Restart systemd-resolved
 		  sudo systemctl restart systemd-resolved
 
