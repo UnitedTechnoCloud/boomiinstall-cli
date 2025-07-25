@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CONFIGURATION
-DOMAINS=("RDBMS9SRVBELL" "flow-sql-test-01" "BIDSQL1N1" "AZR-SVR-APP-D01" "AZR-SVR-SQL-P02" "flow-sql-prod-01" "GRB-OT-SQL-P01")
+DOMAINS=("GRB-OT-SQL-P01")
 SNS_TOPIC_ARN="arn:aws:sns:ca-central-1:456486178888:boomi-sanimax-ATOM-dev-runtime-stack-NotificationTopic-0l1lG1GjuUNR"
 AWS_REGION="ca-central-1"
 HOSTNAME=$(hostname)
@@ -30,10 +30,10 @@ while true; do
 		  all_private=false
                   sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
                   [Resolve]
-                  DNS=10.207.1.40
-                  FallbackDNS=169.254.169.253 8.8.8.8
-                  DNSStubListener=yes
-                  Domains=~sanimax.int ~ca-central-1.compute.internal ~windows.database.net
+				  DNS=8.8.8.8 1.1.1.1
+				  FallbackDNS=9.9.9.9
+				  DNSStubListener=yes
+				  Domains=~. ~ec2.internal
                   EOF'    
 		  sudo systemctl restart systemd-resolved		  
 		  aws sns publish --region "$AWS_REGION" --topic-arn "$SNS_TOPIC_ARN" --subject "DNS Warning on $HOSTNAME" --message "$DNS_NAME Not Resolved to Any IP: $resolved_ip."		  
@@ -49,10 +49,10 @@ while true; do
 		  all_private=false
                   sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
                   [Resolve]
-                  DNS=10.207.1.40
-                  FallbackDNS=169.254.169.253 8.8.8.8
-                  DNSStubListener=yes
-                  Domains=~sanimax.int ~ca-central-1.compute.internal ~windows.database.net
+                  DNS=8.8.8.8 1.1.1.1
+				  FallbackDNS=9.9.9.9
+				  DNSStubListener=yes
+				  Domains=~. ~ec2.internal
                   EOF'
 		  # Restart systemd-resolved
 		  sudo systemctl restart systemd-resolved
