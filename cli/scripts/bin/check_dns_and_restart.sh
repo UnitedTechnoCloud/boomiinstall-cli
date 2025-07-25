@@ -1,75 +1,24 @@
 #!/bin/bash
 
 # CONFIGURATION
-DOMAINS=("GRB-OT-SQL-P01")
-SNS_TOPIC_ARN="arn:aws:sns:ca-central-1:456486178888:boomi-sanimax-ATOM-dev-runtime-stack-NotificationTopic-0l1lG1GjuUNR"
-AWS_REGION="ca-central-1"
+AWS_REGION="us-east-1"
 HOSTNAME=$(hostname)
-RETRY_INTERVAL=10
 
-# Function to check if IP is private
-is_private_ip() {
-  local ip=$1
-  if [[ $ip =~ ^10\. ]] || \
-	 [[ $ip =~ ^172\.(1[6-9]|2[0-9]|3[0-1])\. ]] || \
-	 [[ $ip =~ ^192\.168\. ]]; then
-	  return 0  # Private
-  else
-	  return 1  # Public
-  fi
-}
+echo "$(date): Applying default DNS settings..."
 
-# Loop until all domains resolve to private IPs
-while true; do
-  all_private=true
-  for domain in "${DOMAINS[@]}"; do
-	  resolved_ip=$(nslookup "$domain" | awk '/^Address: / { print $2 }' | tail -n1)
+# Apply default DNS config
+sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
+[Resolve]
+DNS=8.8.8.8 1.1.1.1
+FallbackDNS=9.9.9.9
+DNSStubListener=yes
+Domains=~. ~ec2.internal
+EOF'
 
-	  if [[ -z "$resolved_ip" ]]; then
-		  echo "$(date): No IP resolved for $domain" >&2
-		  all_private=false
-                  sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
-                  [Resolve]
-				  DNS=8.8.8.8 1.1.1.1
-				  FallbackDNS=9.9.9.9
-				  DNSStubListener=yes
-				  Domains=~. ~ec2.internal
-                  EOF'    
-		  sudo systemctl restart systemd-resolved		  
-		  aws sns publish --region "$AWS_REGION" --topic-arn "$SNS_TOPIC_ARN" --subject "DNS Warning on $HOSTNAME" --message "$DNS_NAME Not Resolved to Any IP: $resolved_ip."		  
-		  continue
-	  fi
+# Fix symbolic link to prevent degraded DNS warning
+sudo ln -sf /run/systemd/resolve/stub-resolv.conf /etc/resolv.conf
 
-	  echo "$(date): $domain resolves to $resolved_ip"
+# Restart systemd-resolved service
+sudo systemctl restart systemd-resolved
 
-	  if is_private_ip "$resolved_ip"; then
-		  echo "$(date): $domain resolved to private IP."
-	  else
-		  echo "$(date): $domain not resolved. Restarting systemd-resolved.."
-		  all_private=false
-                  sudo bash -c 'cat <<EOF > /etc/systemd/resolved.conf
-                  [Resolve]
-                  DNS=8.8.8.8 1.1.1.1
-				  FallbackDNS=9.9.9.9
-				  DNSStubListener=yes
-				  Domains=~. ~ec2.internal
-                  EOF'
-		  # Restart systemd-resolved
-		  sudo systemctl restart systemd-resolved
-
-		  # Send SNS notification
-		  aws sns publish --region "$AWS_REGION" --topic-arn "$SNS_TOPIC_ARN" --subject "DNS Warning on $HOSTNAME" --message "$DNS_NAME is not Resolved to Private IP: $resolved_ip."
-		  # Sleep before checking again
-		  sleep "$RETRY_INTERVAL"
-	  fi
-  done
-
-  # If all domains are private, exit the loop
-  if $all_private; then
-	  echo "$(date): All domains resolved to private IPs.Done."
-	  break
-   else
-	  echo "$(date): All domains not resolved to private IPs.Done."
-	  break   
-  fi
-done
+echo "$(date): DNS configuration completed."
