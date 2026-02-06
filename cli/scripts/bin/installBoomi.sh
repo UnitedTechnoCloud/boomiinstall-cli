@@ -1,5 +1,16 @@
 #!/bin/bash
 source bin/common.sh
+
+# Optional arguments
+OPT_ARGUMENTS=(cloudId)
+
+inputs "$@"
+
+if [ "$?" -gt "0" ]
+then
+       return 255;
+fi
+
 INSTALL_DIR="${installDir}"
 JRE_HOME="${jreHome}"
 JAVA_HOME="${javaHome}"
