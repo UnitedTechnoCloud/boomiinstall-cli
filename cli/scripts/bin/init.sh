@@ -193,6 +193,7 @@ source /home/$serviceUserName/.profile
 if [[ ! -f ${ATOM_HOME}/bin/atom ]]
 then
         sudo chown -R $serviceUserName:$groupName "${mountPoint}"
+	echo "DEBUG: Calling installBoomi.sh with cloudId=${cloudId}"
 	source bin/installBoomi.sh cloudId="${cloudId}"
 else
 	echo "Atom is already installed at $ATOM_HOME, will install only the start up service"	
