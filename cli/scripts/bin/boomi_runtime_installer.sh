@@ -76,9 +76,21 @@ sudo apt-get install -y libxml2-utils -y
 
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
-echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
+
+# Check if BOOMI_CLI_PATH is set and exists (from bootstrap script)
+if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH" ]; then
+    echo "Using existing boomiinstall-cli from bootstrap at: $BOOMI_CLI_PATH"
+    CLI_PATH="$BOOMI_CLI_PATH"
+elif [ -d "boomiinstall-cli" ]; then
+    echo "boomiinstall-cli already exists in current directory, using it..."
+    CLI_PATH="/home/$USR/boomi/boomicicd/boomiinstall-cli"
+else
+    echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
+    git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
+    CLI_PATH="/home/$USR/boomi/boomicicd/boomiinstall-cli"
+fi
+
+cd $CLI_PATH/cli/
 chmod +x scripts/bin/*.*
 chmod +x scripts/home/*.*
 set +e
@@ -93,7 +105,7 @@ cp scripts/home/* /home/$USR
 
 # Create the .profile
 cd /home/$USR
-cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
+cp $CLI_PATH/cli/scripts/home/.profile .
 echo "export platform=${platform}" >> .profile
 chmod u+x /home/$USR/.profile
 echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
@@ -128,7 +140,7 @@ whoami
 # install boomi
 sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
-cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
+cd $CLI_PATH/cli/scripts
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
