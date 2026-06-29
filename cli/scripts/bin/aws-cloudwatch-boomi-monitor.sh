@@ -9,7 +9,7 @@ CLOUDWATCH_LOG_GROUP_NAME=boomi-barrakuda-cloudwatch-logs
 # Install collectd
 echo "Installing collectd ..."
 yum install -y amazon-linux-extras
-amazon-linux-extras install -y java-openjdk11
+yum install -y java-11-amazon-corretto
 amazon-linux-extras install -y collectd
 yum install -y collectd-java
 yum install -y collectd-generic-jmx
@@ -19,12 +19,12 @@ echo "Disabling SELinux..."
 setenforce 0
 sed -i "s%SELINUX=enforcing%SELINUX=disabled%g" /etc/selinux/config
 
-# Looking for libjvm.so from the java-openjdk11 package that was installed
+# Looking for libjvm.so from the java-11-amazon-corretto package that was installed
 LIBJVM_SYMLINK=/usr/lib64/libjvm.so
 if [ -L ${LIBJVM_SYMLINK} ] && [ -e ${LIBJVM_SYMLINK} ]; then
     echo "Synlink to libjvm.so already exists. Skipping..."
 else
-    libjvm_location=$(sudo find / -name libjvm.so | grep -m 1 'java-11-openjdk')
+        libjvm_location=$(sudo find /usr/lib/jvm -name libjvm.so | grep -m 1 'java-11-amazon-corretto')
     echo "libjvm_location: $libjvm_location"
     sudo ln -s $libjvm_location /usr/lib64/libjvm.so
 fi
