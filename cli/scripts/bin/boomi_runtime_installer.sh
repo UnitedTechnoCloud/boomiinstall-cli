@@ -64,6 +64,14 @@ if [ -L ${LIBJVM_SYMLINK} ] && [ -e ${LIBJVM_SYMLINK} ]; then
 		        sudo ln -s $libjvm_location /usr/lib64/libjvm.so
 fi
 
+# Discover Corretto home for pref_jre.cfg / inst_jre.cfg
+CORRETTO_HOME=$(find /usr/lib/jvm -maxdepth 1 -type d -name "*amazon-corretto*" 2>/dev/null | head -1)
+if [ -z "$CORRETTO_HOME" ]; then
+    echo "WARNING: Could not auto-detect Corretto home under /usr/lib/jvm. pref_jre.cfg may be incorrect."
+    CORRETTO_HOME=/usr/lib/jvm/java-11-amazon-corretto
+fi
+echo "Corretto home: $CORRETTO_HOME"
+
 set -e
 ## download boomicicd CLI 
 sudo yum install -y jq -y
@@ -126,7 +134,7 @@ export client=${client}
 export group=${group}
 env
 echo "run init.sh..."
-. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir}
+. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} jreHome=${CORRETTO_HOME} javaHome=${CORRETTO_HOME}
 EOF
 
 echo "boomi install complete..."
