@@ -134,6 +134,7 @@ export client=${client}
 export group=${group}
 env
 echo "run init.sh..."
+echo "installDir: ${installDir}"
 . bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} jreHome=${CORRETTO_HOME} javaHome=${CORRETTO_HOME}
 EOF
 
