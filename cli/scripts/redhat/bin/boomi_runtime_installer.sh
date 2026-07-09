@@ -114,21 +114,15 @@ sudo ${PKG_MGR} install -y libxml2
 mkdir -p  $HOME_DIR/boomi/boomicicd
 cd $HOME_DIR/boomi/boomicicd
 
-# Check if BOOMI_CLI_PATH is set and exists (from bootstrap / manual install script)
-CLI_ZIP="/tmp/boomiinstall-cli.zip"
-if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH" ]; then
-    echo "Using existing boomiinstall-cli from BOOMI_CLI_PATH: $BOOMI_CLI_PATH"
+# BOOMI_CLI_PATH must point to the repo root (directory containing cli/).
+# It is set by boomi-manual-install.sh before sourcing this script.
+if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH/cli" ]; then
+    echo "Using boomiinstall-cli from BOOMI_CLI_PATH: $BOOMI_CLI_PATH"
     CLI_PATH="$BOOMI_CLI_PATH"
-elif [ -d "$HOME_DIR/boomi/boomicicd/boomiinstall-cli" ]; then
-    echo "boomiinstall-cli already exists in working directory, using it..."
-    CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
-elif [ -f "$CLI_ZIP" ]; then
-    echo "Extracting boomiinstall-cli from $CLI_ZIP ..."
-    sudo unzip -q "$CLI_ZIP" -d "$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
-    sudo chmod -R 755 "$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
-    CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
 else
-    echo "ERROR: boomiinstall-cli not found. Set BOOMI_CLI_PATH or upload $CLI_ZIP to the node."
+    echo "ERROR: BOOMI_CLI_PATH is not set or does not contain a cli/ subdirectory."
+    echo "  BOOMI_CLI_PATH='${BOOMI_CLI_PATH}'"
+    echo "  Expected: a path whose cli/ subdirectory exists."
     exit 1
 fi
 
