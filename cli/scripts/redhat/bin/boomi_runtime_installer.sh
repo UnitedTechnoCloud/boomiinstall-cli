@@ -89,7 +89,7 @@ sudo ${PKG_MGR} install -y java-11-amazon-corretto-headless || {
 cd /usr/lib/jvm/
 sudo ln -sf java-11-amazon-corretto/ jre || sudo ln -sf $(ls -d java-11-amazon-corretto* | head -1) jre
 # On RedHat: nfs-utils replaces ubuntu's nfs-common
-sudo ${PKG_MGR} install -y git binutils nfs-utils
+sudo ${PKG_MGR} install -y binutils nfs-utils
 
 if [ "${platform}" = "aws" ]; then
     sudo ${PKG_MGR} install -y awscli
@@ -114,17 +114,22 @@ sudo ${PKG_MGR} install -y libxml2
 mkdir -p  $HOME_DIR/boomi/boomicicd
 cd $HOME_DIR/boomi/boomicicd
 
-# Check if BOOMI_CLI_PATH is set and exists (from bootstrap script)
+# Check if BOOMI_CLI_PATH is set and exists (from bootstrap / manual install script)
+CLI_ZIP="/tmp/boomiinstall-cli.zip"
 if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH" ]; then
-    echo "Using existing boomiinstall-cli from bootstrap at: $BOOMI_CLI_PATH"
+    echo "Using existing boomiinstall-cli from BOOMI_CLI_PATH: $BOOMI_CLI_PATH"
     CLI_PATH="$BOOMI_CLI_PATH"
-elif [ -d "boomiinstall-cli" ]; then
-    echo "boomiinstall-cli already exists in current directory, using it..."
+elif [ -d "$HOME_DIR/boomi/boomicicd/boomiinstall-cli" ]; then
+    echo "boomiinstall-cli already exists in working directory, using it..."
+    CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
+elif [ -f "$CLI_ZIP" ]; then
+    echo "Extracting boomiinstall-cli from $CLI_ZIP ..."
+    sudo unzip -q "$CLI_ZIP" -d "$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
+    sudo chmod -R 755 "$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
     CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
 else
-    echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-    git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-    CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
+    echo "ERROR: boomiinstall-cli not found. Set BOOMI_CLI_PATH or upload $CLI_ZIP to the node."
+    exit 1
 fi
 
 cd $CLI_PATH/cli/
