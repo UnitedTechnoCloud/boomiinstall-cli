@@ -27,6 +27,18 @@ echo "installDir : ${installDir}"
 echo "workDir : ${workDir}"
 echo "tmpDir : ${tmpDir}"
 
+# --- Wait for RHSM registration (runs concurrently with first boot) ---
+# Without this, dnf/yum may fail because the entitlement repos are not yet available.
+echo "Waiting for RHSM entitlement registration..."
+for i in $(seq 1 30); do
+  if subscription-manager identity &>/dev/null; then
+    echo "RHSM registered (attempt $i)"
+    break
+  fi
+  echo "  RHSM not ready yet, waiting 10s (attempt $i/30)..."
+  sleep 10
+done
+
 # Detect package manager: prefer dnf (RHEL 8+), fall back to yum (RHEL 7/CentOS 7)
 if command -v dnf &>/dev/null; then
     PKG_MGR="dnf"
@@ -47,6 +59,8 @@ sudo ${PKG_MGR} install -y zip
 sudo ${PKG_MGR} install -y python3-pip
 python3 --version
 sudo ${PKG_MGR} install -y ca-certificates curl gnupg2
+# Kerberos client tools (kinit/klist) needed for NFS sec=krb5 mounts
+sudo ${PKG_MGR} install -y krb5-workstation
 
 # Enable EPEL repository for additional packages (jq, etc.)
 echo "enabling EPEL repository..."
@@ -161,6 +175,22 @@ chown -R $USR:$GRP /usr/local/boomi/
 chown -R $USR:$GRP /usr/local/bin/
 chown -R $USR:$GRP /data
 whoami
+
+# --- Kerberos pre-authentication (for NFS mounts secured with sec=krb5) ---
+# Activate by setting kerberosEnabled=true, or simply by placing a keytab at kerberosKeytab.
+# Defaults target the production service account srvcboomipd.us@usplexus.com.
+KERBEROS_USER="${kerberosUser:-srvcboomipd.us@usplexus.com}"
+KERBEROS_PRINCIPAL="${kerberosPrincipal:-srvcboomipd.us@USPLEXUS.COM}"
+KERBEROS_KEYTAB="${kerberosKeytab:-/etc/nfs.keytab}"
+
+if [ "${kerberosEnabled}" = "true" ] || [ -f "${KERBEROS_KEYTAB}" ]; then
+    echo "Kerberos enabled — obtaining ticket for ${KERBEROS_PRINCIPAL} ..."
+    sudo -u "${KERBEROS_USER}" kinit -kt "${KERBEROS_KEYTAB}" "${KERBEROS_PRINCIPAL}"
+    sudo -u "${KERBEROS_USER}" klist
+    echo "Kerberos ticket obtained."
+else
+    echo "Kerberos not configured (no keytab at ${KERBEROS_KEYTAB}), skipping kinit."
+fi
 
 # install boomi
 sudo -u $USR bash << EOF
