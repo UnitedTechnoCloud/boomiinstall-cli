@@ -10,8 +10,10 @@ if [ -n "$platform" ] ; then
 fi
 
 echo "begin boomi install (RedHat/RHEL) with new efs script main branch..."
-USR=boomi
-GRP=boomi
+# AD/SSSD service account — no local user creation needed
+USR='srvcboomipd.us@usplexus.com'
+GRP=513
+HOME_DIR="/home/srvcboomipd.us"
 whoami
 echo "Cloud Platform : ${platform}"
 echo "Atom Name : ${atomName}"
@@ -47,12 +49,8 @@ else
 fi
 echo "Using package manager: ${PKG_MGR}"
 
-#  create boomi user
-sudo groupadd -g 5151 -r $GRP
-sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
-# On RedHat, the privileged group is 'wheel' (not 'sudo')
-sudo usermod -aG wheel boomi
-echo "boomi ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
+# AD/SSSD user already exists via SSSD — grant passwordless sudo for Boomi operations
+echo "$USR ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
 sudo ${PKG_MGR} -y update
 echo "install python..."
 sudo ${PKG_MGR} install -y zip
@@ -113,8 +111,8 @@ sudo ${PKG_MGR} install -y jq
 sudo ${PKG_MGR} install -y libxml2
 # sudo ${PKG_MGR} install -y wireshark
 
-mkdir -p  /home/$USR/boomi/boomicicd
-cd /home/$USR/boomi/boomicicd
+mkdir -p  $HOME_DIR/boomi/boomicicd
+cd $HOME_DIR/boomi/boomicicd
 
 # Check if BOOMI_CLI_PATH is set and exists (from bootstrap script)
 if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH" ]; then
@@ -122,11 +120,11 @@ if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH" ]; then
     CLI_PATH="$BOOMI_CLI_PATH"
 elif [ -d "boomiinstall-cli" ]; then
     echo "boomiinstall-cli already exists in current directory, using it..."
-    CLI_PATH="/home/$USR/boomi/boomicicd/boomiinstall-cli"
+    CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
 else
     echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
     git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-    CLI_PATH="/home/$USR/boomi/boomicicd/boomiinstall-cli"
+    CLI_PATH="$HOME_DIR/boomi/boomicicd/boomiinstall-cli"
 fi
 
 cd $CLI_PATH/cli/
@@ -140,40 +138,36 @@ curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o atom_install64.s
 curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_install64.sh && chmod +x "molecule_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o gateway_install64.sh && chmod +x "gateway_install64.sh"
-cp scripts/redhat/home/* /home/$USR
+cp scripts/redhat/home/* $HOME_DIR
 
 # Create the .profile
-cd /home/$USR
+cd $HOME_DIR
 cp $CLI_PATH/cli/scripts/redhat/home/.profile .
 echo "export platform=${platform}" >> .profile
-chmod u+x /home/$USR/.profile
-echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
-echo "	. /home/$USR/.profile" >> /home/$USR/.bashrc
-echo "fi" >> /home/$USR/.bashrc
+chmod u+x $HOME_DIR/.profile
+echo "if [ -f $HOME_DIR/.profile ]; then" >> $HOME_DIR/.bashrc
+echo "	. $HOME_DIR/.profile" >> $HOME_DIR/.bashrc
+echo "fi" >> $HOME_DIR/.bashrc
 if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
     EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
     echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile	
-    source /home/$USR/.profile
+    source $HOME_DIR/.profile
 fi
 
-if [ -n "$installDir" ] ; then
-      mkdir -p /opt/boomi/local
-      chown -R $USR:$GRP /opt/boomi/local 
-fi
-
-# set up local directories for install
-mkdir -p /mnt/boomi
+mkdir -p /opt/boomi/local
 mkdir -p /usr/local/boomi/work
 mkdir -p /usr/local/boomi/tmp
 mkdir -p /usr/local/bin
 mkdir -p /data/tmp
 mkdir -p /data/work
-chown -R $USR:$GRP /mnt/boomi/
-chown -R $USR:$GRP /home/$USR/
-chown -R $USR:$GRP /usr/local/boomi/
-chown -R $USR:$GRP /usr/local/bin/
-chown -R $USR:$GRP /data
+# NFS root cannot be chowned (root_squash); chown only the contents
+sudo -u "$USR" chown -R "$USR:$GRP" /mnt/boomi/* 2>/dev/null || true
+chown -R "$USR:$GRP" $HOME_DIR/
+chown -R "$USR:$GRP" /usr/local/boomi/
+chown -R "$USR:$GRP" /usr/local/bin/
+chown -R "$USR:$GRP" /opt/boomi/local
+chown -R "$USR:$GRP" /data
 whoami
 
 # --- Kerberos pre-authentication (for NFS mounts secured with sec=krb5) ---
