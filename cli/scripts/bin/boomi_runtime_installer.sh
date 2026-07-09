@@ -1,153 +1,214 @@
 #!/bin/bash
-#set -x
-if [ -n "$platform" ] ; then
-    if [[ -f /etc/boomi_runtime_installer ]]; then 
-        echo "boomi_runtime_installer already run so will not be run again!"
-        exit 0; 
-    fi
+set -e
+
+# Guard: prevent re-runs on the same host
+if [ -f /etc/boomi_runtime_installer ]; then
+    echo "boomi_runtime_installer already run, exiting."
+    exit 0
 fi
 
-echo "begin boomi install with new efs script main branch..."
-USR=boomi
-GRP=boomi
-whoami
-echo "Cloud Platform : ${platform}"
-echo "Atom Name : ${atomName}"
-echo "Atom Type : ${atomType}"
-echo "Boomi Environment : ${boomiEnv}"
-echo "purge Days : ${purgeHistoryDays}"
-echo "max Memory : ${maxMem}"
-echo "efsMount : ${efsMount}"
-echo "installDir : ${installDir}"
-echo "workDir : ${workDir}"
-echo "tmpDir : ${tmpDir}"
-#  create boomi user
-sudo groupadd -g 5151 -r $GRP
-sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
-sudo usermod -aG sudo boomi
-echo "boomi ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
-sudo apt-get -y update
-echo "install python..."
-sudo apt-get install -y zip -y
-sudo apt-get install python3-pip -y
-python3 --version
-sudo apt-get install -y ca-certificates curl gnupg  lsb-release -y
+echo "Begin Boomi Install (RHEL / Kerberos)..."
 
-# set ulimits
+# --- Service account (Kerberos principal, managed by AD/SSSD — no local useradd) ---
+export USR='srvcboomipd.us@usplexus.com'
+export USR1='srvcboomipd.us@USPLEXUS.COM'
+export GRP=${GRP:-513}
+export HOME_DIR="/home/srvcboomipd.us"
+
+# --- Runtime parameters sourced from user-data / environment ---
+export mountPoint="${mountPoint:-/mnt/boomi}"
+export platform="${platform:-gcp}"
+export atomType="${atomType:-MOLECULE}"
+export client="${client}"
+export group="${group}"
+export env="${boomiEnv:-${env}}"
+export efsMount="${efsMount}"
+export nfsVersion="${nfsVersion:-4.1}"
+# Normalise atom name: hyphens → underscores (Boomi convention)
+export atomName="$(echo "${atomName}" | sed -e 's/-/_/g')"
+
+echo "Cloud Platform : ${platform}"
+echo "Atom Name      : ${atomName}"
+echo "Atom Type      : ${atomType}"
+echo "Environment    : ${env}"
+echo "Mount Point    : ${mountPoint}"
+echo "EFS/NFS Mount  : ${efsMount}"
+
+# --- Wait for RHSM registration (runs concurrently with first boot) ---
+echo "Waiting for RHSM entitlement registration..."
+for i in $(seq 1 30); do
+  if subscription-manager identity &>/dev/null; then
+    echo "RHSM registered (attempt $i)"
+    break
+  fi
+  echo "  RHSM not ready yet, waiting 10s (attempt $i/30)..."
+  sleep 10
+done
+
+# --- System packages ---
+sudo dnf clean all
+sudo dnf update -y
+echo "install python..."
+sudo dnf install -y zip
+sudo dnf install -y python3-pip
+python3 --version
+sudo dnf install -y ca-certificates curl gnupg2
+
+# --- ulimits ---
 sudo sysctl -w net.core.rmem_max=8388608
 sudo sysctl -w net.core.wmem_max=8388608
 sudo sysctl -w net.core.rmem_default=65536
 sudo sysctl -w net.core.wmem_default=65536
-printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
-printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
-printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
-printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
+printf "%s\t\t%s\t\t%s\t\t%s\n" "$USR" "soft" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
+printf "%s\t\t%s\t\t%s\t\t%s\n" "$USR" "hard" "nproc" "65535" | sudo tee -a /etc/security/limits.conf
+printf "%s\t\t%s\t\t%s\t\t%s\n" "$USR" "soft" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
+printf "%s\t\t%s\t\t%s\t\t%s\n" "$USR" "hard" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
 
-# install java
-echo "install java..."
-sudo apt-get update && sudo apt-get install -y java-common -y
-curl -fssL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.deb -o amazon-corretto-11-x64-linux-jdk.deb
-sudo dpkg --install amazon-corretto-11-x64-linux-jdk.deb
-cd /usr/lib/jvm/
+# --- Java: Amazon Corretto 11 via RPM repository (no amazon-linux-extras required) ---
+echo "install java (Amazon Corretto 11)..."
+sudo rpm --import https://yum.corretto.aws/corretto.key
+sudo curl -fsSL -o /etc/yum.repos.d/corretto.repo https://yum.corretto.aws/corretto.repo
+sudo dnf install -y java-11-amazon-corretto-devel
+cd /usr/lib/jvm/ || exit 1
 sudo ln -sf java-11-amazon-corretto/ jre
-sudo apt-get -y install git binutils -y
-sudo apt-get -y install nfs-common
+sudo dnf install -y git binutils
+sudo dnf install -y nfs-utils jq libxml2
 
-if [ "${platform}" = "aws" ]; then
-    sudo apt-get install -y awscli
-    sudo apt-get -y install git binutils
-    cd /tmp
-    git clone https://github.com/aws/efs-utils
-    cd /tmp/efs-utils
-    ./build-deb.sh
-    sudo apt-get -y install ./build/amazon-efs-utils*deb
-else
-    echo "awscli install not required!"
-fi
+# --- Ensure home directory exists (SSSD may not have created it yet) ---
+mkdir -p "${HOME_DIR}"
 
-set -e
-## download boomicicd CLI 
-sudo apt-get install -y jq -y
-sudo apt-get install -y libxml2-utils -y
-# sudo apt-get install tshark -y
+# --- Write home scripts ---
+echo "Writing home scripts to ${HOME_DIR}..."
 
-mkdir -p  /home/$USR/boomi/boomicicd
-cd /home/$USR/boomi/boomicicd
-echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
-chmod +x scripts/bin/*.*
-chmod +x scripts/home/*.*
-set +e
+# restart.sh — variables evaluated at runtime, so use single-quoted heredoc
+cat > "${HOME_DIR}/restart.sh" <<'EOL'
+#!/bin/bash
+source /home/srvcboomipd.us/.profile
+restart_log="restart_${ATOM_LOCALHOSTID}.log"
+date >> "${restart_log}" 2>&1
+echo "Using systemd for restart. Check journalctl for logs." >> "${restart_log}" 2>&1
+sudo systemctl restart atom
+EOL
+chown "$USR:$GRP" "${HOME_DIR}/restart.sh"
+chmod 755 "${HOME_DIR}/restart.sh"
+echo "File ${HOME_DIR}/restart.sh has been created."
 
-# download Boomi installers
-echo "download boomi installers..."
-curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o atom_install64.sh && chmod +x "atom_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_install64.sh && chmod +x "molecule_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o gateway_install64.sh && chmod +x "gateway_install64.sh"
-cp scripts/home/* /home/$USR
+# start-atom.sh
+cat > "${HOME_DIR}/start-atom.sh" <<'EOL'
+#!/bin/bash
+source /home/srvcboomipd.us/.profile
+atom start
+atom status
+exit 0
+EOL
+chown "$USR:$GRP" "${HOME_DIR}/start-atom.sh"
+chmod 755 "${HOME_DIR}/start-atom.sh"
+echo "File ${HOME_DIR}/start-atom.sh has been created."
 
-# Create the .profile
-cd /home/$USR
-cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
-echo "export platform=${platform}" >> .profile
-chmod u+x /home/$USR/.profile
-echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
-echo "	. /home/$USR/.profile" >> /home/$USR/.bashrc
-echo "fi" >> /home/$USR/.bashrc
-if [ "${platform}" = "aws" ]; then
-    EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
-    EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
-    echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile	
-    source /home/$USR/.profile
-fi
+# stop-atom.sh
+cat > "${HOME_DIR}/stop-atom.sh" <<'EOL'
+#!/bin/bash
+source /home/srvcboomipd.us/.profile
+atom stop
+atom status
+exit 0
+EOL
+chown "$USR:$GRP" "${HOME_DIR}/stop-atom.sh"
+chmod 755 "${HOME_DIR}/stop-atom.sh"
+echo "File ${HOME_DIR}/stop-atom.sh has been created."
 
-if [ -n "$installDir" ] ; then
-      mkdir -p /opt/boomi/local
-      chown -R $USR:$GRP /opt/boomi/local 
-fi
+# .profile — variables ARE expanded here (platform, client, group, env, atomName)
+cat > "${HOME_DIR}/.profile" <<EOL
+export JAVA_HOME='/usr/bin/java'
+export JDK_HOME='/usr/bin/java'
+export platform="${platform}"
+export client=${client}
+export group=${group}
+export environment=${env}
+export BOOMI_CONTAINERNAME="${atomName}"
+EOL
+chown "$USR:$GRP" "${HOME_DIR}/.profile"
+chmod 644 "${HOME_DIR}/.profile"
+echo ". ${HOME_DIR}/.profile" >> "${HOME_DIR}/.bashrc"
+echo "File ${HOME_DIR}/.profile has been created."
 
-# set up local directories for install
-mkdir -p /mnt/boomi
+# --- Local directories ---
 mkdir -p /usr/local/boomi/work
 mkdir -p /usr/local/boomi/tmp
 mkdir -p /usr/local/bin
-mkdir -p /data/tmp
-mkdir -p /data/work
-chown -R $USR:$GRP /mnt/boomi/
-chown -R $USR:$GRP /home/$USR/
-chown -R $USR:$GRP /usr/local/boomi/
-chown -R $USR:$GRP /usr/local/bin/
-chown -R $USR:$GRP /data
-whoami
+mkdir -p /opt/boomi/local
 
-# install boomi
-sudo -u $USR bash << EOF
-echo "install boomi runtime as $USR"
-cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
-if [ -n "$efsMount" ] ; then
-    echo "setting EFS Mount:${efsMount} ..."
-    source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
-fi
+# --- Kerberos: obtain ticket BEFORE accessing the NFS share ---
+# Requires /etc/nfs.keytab pre-provisioned for srvcboomipd.us@USPLEXUS.COM
+echo "Obtaining Kerberos ticket for ${USR} ..."
+sudo -u 'srvcboomipd.us@usplexus.com' kinit -kt /etc/nfs.keytab 'srvcboomipd.us@USPLEXUS.COM'
+sudo -u "$USR" klist
 
-#if [ -z "$authToken" ]; then
-# authToken="$boomiAtmosphereToken"
-#fi
-#if [ -z "$authToken" ]; then 
-# authToken="BOOMI_TOKEN."
-#fi
-export authToken=${boomiAtmosphereToken}
-export client=${client}
-export group=${group}
-env
-echo "run init.sh..."
-. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} workDir=${workDir} tmpDir=${tmpDir}
+# --- Determine ATOM_HOME ---
+dir_prefix="Molecule"
+if [ "$atomType" = "GATEWAY" ]; then dir_prefix="Gateway"; fi
+export ATOM_HOME="${mountPoint}/${dir_prefix}_${atomName}"
+echo "ATOM_HOME: ${ATOM_HOME}"
+echo "export ATOM_HOME='${ATOM_HOME}'" >> "${HOME_DIR}/.profile"
+
+# --- Discover next available node ID ---
+# Scans the molecule's views directory to find an unclaimed molecule_N slot
+i=0
+while [ $i -lt 10 ]; do
+    viewfile_count=$(sudo -u 'srvcboomipd.us@usplexus.com' bash -c \
+        "ls ${ATOM_HOME}/bin/views/*molecule_${i}* 2>/dev/null" | wc -l)
+    if [ "$viewfile_count" -eq 0 ]; then
+        ATOM_LOCALHOSTID=molecule_$i
+        break
+    else
+        i=$((i + 1))
+    fi
+done
+echo "ATOM_LOCALHOSTID: ${ATOM_LOCALHOSTID}"
+echo "export ATOM_LOCALHOSTID=${ATOM_LOCALHOSTID}" >> "${HOME_DIR}/.profile"
+echo "export pod_name=${ATOM_LOCALHOSTID}" >> "${HOME_DIR}/.profile"
+
+# --- Create systemd service unit ---
+echo "create atom.service ..."
+cat > /etc/systemd/system/atom.service <<EOF
+[Unit]
+Description=Boomi ${atomName}
+After=network.target
+RequiresMountsFor="${mountPoint}"
+
+[Service]
+User=${USR}
+WorkingDirectory=${HOME_DIR}
+PassEnvironment=JAVA_HOME
+ExecStart=/bin/bash ${HOME_DIR}/start-atom.sh
+ExecStop=/bin/bash ${HOME_DIR}/stop-atom.sh
+Type=forking
+TimeoutStartSec=600
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
 EOF
 
-echo "boomi install complete..."
+ln -sf "${ATOM_HOME}/bin/atom" /usr/local/bin/atom
+sudo -u "$USR" cp -f "${HOME_DIR}/restart.sh" "${ATOM_HOME}/bin"
 
-if [ -n "$platform" ] ; then
-  touch /etc/boomi_runtime_installer
-  echo "boomi_runtime_installer flag created"
-fi
+# --- Fix ownership and permissions ---
+chown -R "$USR:$GRP" "${HOME_DIR}/"
+chmod 755 "${HOME_DIR}/start-atom.sh" "${HOME_DIR}/stop-atom.sh" "${HOME_DIR}/restart.sh"
+chown -R "$USR:$GRP" /usr/local/boomi/
+chown -R "$USR:$GRP" /usr/local/bin/
+chown -R "$USR:$GRP" /opt/boomi/local
+# NFS root cannot be chowned; chown contents only (errors suppressed)
+sudo -u "$USR" chown -R "$USR:$GRP" /mnt/boomi/* 2>/dev/null || true
+
+# --- Enable and start service ---
+echo "setup atom.service ..."
+systemctl enable atom
+systemctl start atom
+systemctl is-active --quiet atom && echo "Service is running..."
+
+touch /etc/boomi_runtime_installer
+echo "boomi_runtime_installer flag created"
+
+echo "... Boomi Install Complete."
