@@ -126,9 +126,10 @@ else
     exit 1
 fi
 
+chmod -R 777 $CLI_PATH/cli
 cd $CLI_PATH/cli/
-chmod +x scripts/redhat/bin/*.*
-chmod +x scripts/redhat/home/*.*
+chmod +x scripts/bin/*.*
+chmod +x scripts/home/*.*
 set +e
 
 # download Boomi installers
@@ -137,11 +138,12 @@ curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o atom_install64.s
 curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_install64.sh && chmod +x "molecule_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o gateway_install64.sh && chmod +x "gateway_install64.sh"
-cp scripts/redhat/home/* $HOME_DIR
+cp scripts/home/* $HOME_DIR
 
 # Create the .profile
 cd $HOME_DIR
-cp $CLI_PATH/cli/scripts/redhat/home/.profile .
+chmod -R 777 $HOME_DIR
+cp $CLI_PATH/cli/scripts/home/.profile .
 echo "export platform=${platform}" >> .profile
 chmod u+x $HOME_DIR/.profile
 echo "if [ -f $HOME_DIR/.profile ]; then" >> $HOME_DIR/.bashrc
@@ -188,7 +190,7 @@ fi
 # install boomi
 sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
-cd $CLI_PATH/cli/scripts/redhat
+cd $CLI_PATH/cli/scripts
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
