@@ -1,5 +1,18 @@
 #!/bin/bash
 source bin/common.sh
+
+# Optional arguments
+OPT_ARGUMENTS=(cloudId)
+
+inputs "$@"
+
+if [ "$?" -gt "0" ]
+then
+       return 255;
+fi
+
+echo "DEBUG: installBoomi.sh received cloudId=${cloudId}"
+
 INSTALL_DIR="${installDir}"
 JRE_HOME="${jreHome}"
 JAVA_HOME="${javaHome}"
@@ -36,9 +49,10 @@ if [[ "$atomType" = "ATOM" ]]
 			exit 0
         fi
 		
+		echo "DEBUG: Calling installerToken.sh with cloudId=${cloudId}"
 		source bin/installerToken.sh atomType=${atomType} cloudId=$cloudId
-		./bin/installCloud.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
-		source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"		
+		echo "DEBUG: Calling installCloud.sh with cloudId=${cloudId}"
+	./bin/installCloud.sh atomName="${atomName}" cloudId="${cloudId}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 		
 	elif [[ "$atomType" = "GATEWAY" ]]
 	then

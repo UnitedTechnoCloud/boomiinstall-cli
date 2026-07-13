@@ -5,7 +5,7 @@ source bin/common.sh
 # mandatory arguments
 unset atomType ATOM_HOME
 ARGUMENTS=(atomName accountId classification)
-OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group)
+OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group cloudId)
 
 inputs "$@"
 
@@ -29,6 +29,8 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
 echo "authToken : ${authToken}"
+echo "cloudId : ${cloudId}"
+echo "accountId : ${accountId}"
 echo "client : ${client}"
 echo "group : ${group}"
 echo "region : ${region}"
@@ -190,8 +192,9 @@ source /home/$serviceUserName/.profile
 # install Boomi only if the atom binaries are not installed
 if [[ ! -f ${ATOM_HOME}/bin/atom ]]
 then
-        sudo chown -R $serviceUserName:$groupName "${mountPoint}"
-	source bin/installBoomi.sh
+    sudo chown -R $serviceUserName:$groupName "${mountPoint}"
+	echo "DEBUG: Calling installBoomi.sh with cloudId=${cloudId}"
+	source bin/installBoomi.sh cloudId="${cloudId}"
 else
 	echo "Atom is already installed at $ATOM_HOME, will install only the start up service"	
 fi

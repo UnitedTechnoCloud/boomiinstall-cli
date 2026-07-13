@@ -1,19 +1,26 @@
 #!/bin/bash
+# RedHat/RHEL/CentOS version of boomi_runtime_installer.sh
+# Replaces Ubuntu apt-get with dnf/yum, adjusts package names and group membership for RedHat family distros.
 #set -x
 if [ -n "$platform" ] ; then
-    if [[ -f /etc/boomi_runtime_installer ]]; then 
+    if [[ -f /etc/boomi_runtime_installer ]]; then
         echo "boomi_runtime_installer already run so will not be run again!"
-        exit 0; 
+        exit 0;
     fi
 fi
 
-echo "begin boomi install with new efs script main branch..."
-USR=boomi
-GRP=boomi
+echo "begin boomi install (RedHat/RHEL) with new efs script main branch..."
+# AD/SSSD service account — no local user creation needed
+USR='srvcboomipd.us@usplexus.com'
+GRP=513
+HOME_DIR="/home/srvcboomipd.us"
 whoami
 echo "Cloud Platform : ${platform}"
 echo "Atom Name : ${atomName}"
 echo "Atom Type : ${atomType}"
+echo "Account Id : ${boomiAccountId}"
+echo "Cloud ID : ${cloudId}"
+echo "Auth Token : ${boomiAtmosphereToken}"
 echo "Boomi Environment : ${boomiEnv}"
 echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
@@ -21,18 +28,47 @@ echo "efsMount : ${efsMount}"
 echo "installDir : ${installDir}"
 echo "workDir : ${workDir}"
 echo "tmpDir : ${tmpDir}"
-#  create boomi user
-sudo groupadd -g 5151 -r $GRP
-sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
-sudo usermod -aG sudo boomi
-echo "boomi ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
-sudo apt-get -y update
-echo "install python..."
-sudo apt-get install -y zip -y
-sudo apt-get install python3-pip -y
-python3 --version
-sudo apt-get install -y ca-certificates curl gnupg  lsb-release -y
 
+# --- Wait for RHSM registration (runs concurrently with first boot) ---
+# Without this, dnf/yum may fail because the entitlement repos are not yet available.
+echo "Waiting for RHSM entitlement registration..."
+for i in $(seq 1 30); do
+  if subscription-manager identity &>/dev/null; then
+    echo "RHSM registered (attempt $i)"
+    break
+  fi
+  echo "  RHSM not ready yet, waiting 10s (attempt $i/30)..."
+  sleep 10
+done
+
+# Detect package manager: prefer dnf (RHEL 8+), fall back to yum (RHEL 7/CentOS 7)
+if command -v dnf &>/dev/null; then
+    PKG_MGR="dnf"
+else
+    PKG_MGR="yum"
+fi
+echo "Using package manager: ${PKG_MGR}"
+
+# AD/SSSD user already exists via SSSD — grant passwordless sudo for Boomi operations
+echo "$USR ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
+sudo ${PKG_MGR} -y update
+echo "install python..."
+sudo ${PKG_MGR} install -y zip
+sudo ${PKG_MGR} install -y python3-pip
+python3 --version
+sudo ${PKG_MGR} install -y ca-certificates curl gnupg2
+# Kerberos client tools (kinit/klist) needed for NFS sec=krb5 mounts
+sudo ${PKG_MGR} install -y krb5-workstation
+
+# Enable EPEL repository for additional packages (jq, etc.)
+echo "enabling EPEL repository..."
+if [ "$PKG_MGR" = "dnf" ]; then
+    sudo dnf install -y epel-release || \
+    sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm || true
+else
+    sudo yum install -y epel-release || \
+    sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm || true
+fi
 # set ulimits
 sudo sysctl -w net.core.rmem_max=8388608
 sudo sysctl -w net.core.wmem_max=8388608
@@ -43,41 +79,56 @@ printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nproc" "65535" | sudo tee -a /etc/s
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
 
-# install java
+# install java (Amazon Corretto 11 - RPM for RedHat)
 echo "install java..."
-sudo apt-get update && sudo apt-get install -y java-common -y
-curl -fssL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.deb -o amazon-corretto-11-x64-linux-jdk.deb
-sudo dpkg --install amazon-corretto-11-x64-linux-jdk.deb
+sudo ${PKG_MGR} install -y java-11-amazon-corretto-headless || {
+    echo "Corretto not available from default repos, downloading RPM directly..."
+    curl -fsSL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.rpm -o amazon-corretto-11-x64-linux-jdk.rpm
+    sudo ${PKG_MGR} localinstall -y amazon-corretto-11-x64-linux-jdk.rpm
+}
 cd /usr/lib/jvm/
-sudo ln -sf java-11-amazon-corretto/ jre
-sudo apt-get -y install git binutils -y
-sudo apt-get -y install nfs-common
+sudo ln -sf java-11-amazon-corretto/ jre || sudo ln -sf $(ls -d java-11-amazon-corretto* | head -1) jre
+# On RedHat: nfs-utils replaces ubuntu's nfs-common
+sudo ${PKG_MGR} install -y binutils nfs-utils
 
 if [ "${platform}" = "aws" ]; then
-    sudo apt-get install -y awscli
-    sudo apt-get -y install git binutils
+    sudo ${PKG_MGR} install -y awscli
+    sudo ${PKG_MGR} install -y git binutils
     cd /tmp
     git clone https://github.com/aws/efs-utils
     cd /tmp/efs-utils
-    ./build-deb.sh
-    sudo apt-get -y install ./build/amazon-efs-utils*deb
+    # RedHat uses 'make rpm' to build the RPM package
+    make rpm
+    sudo ${PKG_MGR} install -y ./build/amazon-efs-utils*rpm
 else
     echo "awscli install not required!"
 fi
 
 set -e
-## download boomicicd CLI 
-sudo apt-get install -y jq -y
-sudo apt-get install -y libxml2-utils -y
-# sudo apt-get install tshark -y
+## download boomicicd CLI
+# On RedHat: jq available via EPEL; libxml2 provides xmllint (replaces ubuntu's libxml2-utils)
+sudo ${PKG_MGR} install -y jq
+sudo ${PKG_MGR} install -y libxml2
+# sudo ${PKG_MGR} install -y wireshark
 
-mkdir -p  /home/$USR/boomi/boomicicd
-cd /home/$USR/boomi/boomicicd
-echo "git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
-git clone https://github.com/UnitedTechnoCloud/boomiinstall-cli
-cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
-chmod +x scripts/bin/*.*
-chmod +x scripts/home/*.*
+mkdir -p  $HOME_DIR/boomi/boomicicd
+cd $HOME_DIR/boomi/boomicicd
+
+# BOOMI_CLI_PATH must point to the repo root (directory containing cli/).
+# It is set by boomi-manual-install.sh before sourcing this script.
+if [ -n "$BOOMI_CLI_PATH" ] && [ -d "$BOOMI_CLI_PATH/cli" ]; then
+    echo "Using boomiinstall-cli from BOOMI_CLI_PATH: $BOOMI_CLI_PATH"
+    CLI_PATH="$BOOMI_CLI_PATH"
+else
+    echo "ERROR: BOOMI_CLI_PATH is not set or does not contain a cli/ subdirectory."
+    echo "  BOOMI_CLI_PATH='${BOOMI_CLI_PATH}'"
+    echo "  Expected: a path whose cli/ subdirectory exists."
+    exit 1
+fi
+
+cd $CLI_PATH/cli/
+chmod +x scripts/redhat/bin/*.*
+chmod +x scripts/redhat/home/*.*
 set +e
 
 # download Boomi installers
@@ -86,46 +137,58 @@ curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o atom_install64.s
 curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_install64.sh && chmod +x "molecule_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
 curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o gateway_install64.sh && chmod +x "gateway_install64.sh"
-cp scripts/home/* /home/$USR
+cp scripts/redhat/home/* $HOME_DIR
 
 # Create the .profile
-cd /home/$USR
-cp /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts/home/.profile .
+cd $HOME_DIR
+cp $CLI_PATH/cli/scripts/redhat/home/.profile .
 echo "export platform=${platform}" >> .profile
-chmod u+x /home/$USR/.profile
-echo "if [ -f /home/$USR/.profile ]; then" >> /home/$USR/.bashrc
-echo "	. /home/$USR/.profile" >> /home/$USR/.bashrc
-echo "fi" >> /home/$USR/.bashrc
+chmod u+x $HOME_DIR/.profile
+echo "if [ -f $HOME_DIR/.profile ]; then" >> $HOME_DIR/.bashrc
+echo "	. $HOME_DIR/.profile" >> $HOME_DIR/.bashrc
+echo "fi" >> $HOME_DIR/.bashrc
 if [ "${platform}" = "aws" ]; then
     EC2_AVAIL_ZONE=`curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone`
     EC2_REGION="`echo \"$EC2_AVAIL_ZONE\" | sed 's/[a-z]$//'`"
     echo "export AWS_DEFAULT_REGION=$EC2_REGION" >> .profile	
-    source /home/$USR/.profile
+    source $HOME_DIR/.profile
 fi
 
-if [ -n "$installDir" ] ; then
-      mkdir -p /opt/boomi/local
-      chown -R $USR:$GRP /opt/boomi/local 
-fi
-
-# set up local directories for install
-mkdir -p /mnt/boomi
+mkdir -p /opt/boomi/local
 mkdir -p /usr/local/boomi/work
 mkdir -p /usr/local/boomi/tmp
 mkdir -p /usr/local/bin
 mkdir -p /data/tmp
 mkdir -p /data/work
-chown -R $USR:$GRP /mnt/boomi/
-chown -R $USR:$GRP /home/$USR/
-chown -R $USR:$GRP /usr/local/boomi/
-chown -R $USR:$GRP /usr/local/bin/
-chown -R $USR:$GRP /data
+# NFS root cannot be chowned (root_squash); chown only the contents
+sudo -u "$USR" chown -R "$USR:$GRP" /mnt/boomi/* 2>/dev/null || true
+chown -R "$USR:$GRP" $HOME_DIR/
+chown -R "$USR:$GRP" /usr/local/boomi/
+chown -R "$USR:$GRP" /usr/local/bin/
+chown -R "$USR:$GRP" /opt/boomi/local
+chown -R "$USR:$GRP" /data
 whoami
+
+# --- Kerberos pre-authentication (for NFS mounts secured with sec=krb5) ---
+# Activate by setting kerberosEnabled=true, or simply by placing a keytab at kerberosKeytab.
+# Defaults target the production service account srvcboomipd.us@usplexus.com.
+KERBEROS_USER="${kerberosUser:-srvcboomipd.us@usplexus.com}"
+KERBEROS_PRINCIPAL="${kerberosPrincipal:-srvcboomipd.us@USPLEXUS.COM}"
+KERBEROS_KEYTAB="${kerberosKeytab:-/etc/nfs.keytab}"
+
+if [ "${kerberosEnabled}" = "true" ] || [ -f "${KERBEROS_KEYTAB}" ]; then
+    echo "Kerberos enabled — obtaining ticket for ${KERBEROS_PRINCIPAL} ..."
+    sudo -u "${KERBEROS_USER}" kinit -kt "${KERBEROS_KEYTAB}" "${KERBEROS_PRINCIPAL}"
+    sudo -u "${KERBEROS_USER}" klist
+    echo "Kerberos ticket obtained."
+else
+    echo "Kerberos not configured (no keytab at ${KERBEROS_KEYTAB}), skipping kinit."
+fi
 
 # install boomi
 sudo -u $USR bash << EOF
 echo "install boomi runtime as $USR"
-cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/scripts
+cd $CLI_PATH/cli/scripts/redhat
 if [ -n "$efsMount" ] ; then
     echo "setting EFS Mount:${efsMount} ..."
     source bin/efsMount.sh efsMount="${efsMount}" platform=${platform}
@@ -142,7 +205,7 @@ export client=${client}
 export group=${group}
 env
 echo "run init.sh..."
-. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} workDir=${workDir} tmpDir=${tmpDir}
+. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} cloudId=${cloudId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} workDir=${workDir} tmpDir=${tmpDir}
 EOF
 
 echo "boomi install complete..."

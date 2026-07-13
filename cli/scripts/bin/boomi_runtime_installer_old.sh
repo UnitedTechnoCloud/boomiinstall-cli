@@ -1,4 +1,6 @@
 #!/bin/bash
+# RedHat/RHEL/CentOS version of boomi_runtime_installer_old.sh
+# Replaces Ubuntu apt-get with dnf/yum, adjusts package names and group membership for RedHat family distros.
 #set -x
 USR=boomi
 GRP=boomi
@@ -7,16 +9,35 @@ echo "Cloud Platform is: ${platform}"
 echo "Atom Name is: ${atomName}"
 echo "Atom Type is: ${atomType}"
 
+# Detect package manager: prefer dnf (RHEL 8+), fall back to yum (RHEL 7/CentOS 7)
+if command -v dnf &>/dev/null; then
+    PKG_MGR="dnf"
+else
+    PKG_MGR="yum"
+fi
+echo "Using package manager: ${PKG_MGR}"
+
 #  create boomi user
 sudo groupadd -g 5151 -r $GRP
 sudo useradd -u 5151 -g $GRP -r -m -s /bin/bash $USR
-sudo usermod -aG sudo boomi
+# On RedHat, the privileged group is 'wheel' (not 'sudo')
+sudo usermod -aG wheel boomi
 echo "boomi ALL=(ALL) NOPASSWD:ALL" | sudo tee -a /etc/sudoers
-sudo apt-get -y update
-sudo apt-get install -y zip
-sudo apt-get install python3-pip
+sudo ${PKG_MGR} -y update
+sudo ${PKG_MGR} install -y zip
+sudo ${PKG_MGR} install -y python3-pip
 python3 --version
-sudo apt-get install -y ca-certificates curl gnupg  lsb-release
+sudo ${PKG_MGR} install -y ca-certificates curl gnupg2
+
+# Enable EPEL repository for additional packages (jq, etc.)
+echo "enabling EPEL repository..."
+if [ "$PKG_MGR" = "dnf" ]; then
+    sudo dnf install -y epel-release || \
+    sudo dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm || true
+else
+    sudo yum install -y epel-release || \
+    sudo yum install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm || true
+fi
 
 # set ulimits
 sudo sysctl -w net.core.rmem_max=8388608
@@ -32,28 +53,32 @@ printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nproc" "65535" | sudo tee -a /etc/s
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "soft" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
 printf "%s\t\t%s\t\t%s\t\t%s\n" $USR "hard" "nofile" "8192" | sudo tee -a /etc/security/limits.conf
 
-# install java
-sudo apt-get update && sudo apt-get install -y java-common
-curl -fssL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.deb -o amazon-corretto-11-x64-linux-jdk.deb
-sudo dpkg --install amazon-corretto-11-x64-linux-jdk.deb
+# install java (Amazon Corretto 11 - RPM for RedHat)
+sudo ${PKG_MGR} install -y java-11-amazon-corretto-headless || {
+    echo "Corretto not available from default repos, downloading RPM directly..."
+    curl -fsSL https://corretto.aws/downloads/latest/amazon-corretto-11-x64-linux-jdk.rpm -o amazon-corretto-11-x64-linux-jdk.rpm
+    sudo ${PKG_MGR} localinstall -y amazon-corretto-11-x64-linux-jdk.rpm
+}
 cd /usr/lib/jvm/
-sudo ln -sf java-11-amazon-corretto/ jre
+sudo ln -sf java-11-amazon-corretto/ jre || sudo ln -sf $(ls -d java-11-amazon-corretto* | head -1) jre
 
 if [ "${platform}" = "aws" ]; then
-    sudo apt-get install -y awscli
-    sudo apt-get -y install git binutils
+    sudo ${PKG_MGR} install -y awscli
+    sudo ${PKG_MGR} install -y git binutils
     cd /tmp
     git clone https://github.com/aws/efs-utils
     cd /tmp/efs-utils
-    ./build-deb.sh
-    sudo apt-get -y install ./build/amazon-efs-utils*deb
+    # RedHat uses 'make rpm' to build the RPM package
+    make rpm
+    sudo ${PKG_MGR} install -y ./build/amazon-efs-utils*rpm
 else
     echo "awscli install not required!"
 fi
 
-## download boomicicd CLI 
-sudo apt-get install -y jq
-sudo apt-get install -y libxml2-utils
+## download boomicicd CLI
+# On RedHat: jq available via EPEL; libxml2 provides xmllint (replaces ubuntu's libxml2-utils)
+sudo ${PKG_MGR} install -y jq
+sudo ${PKG_MGR} install -y libxml2
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 #git clone https://${GitUserName}:${GitPAT}/UnitedTechnoCloud/boomicicd-cli.git
