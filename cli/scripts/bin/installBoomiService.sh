@@ -2,6 +2,7 @@
 
 source bin/common.sh
 ARGUMENTS=(atomName serviceUserName atomHome mountPoint)
+OPT_ARGUMENTS=(groupName)
 authToken="BOOMI_TOKEN."
 inputs "$@"
 echo "create atom.service ..."
@@ -33,7 +34,7 @@ monitorRole readonly
 EOF
 # change the permissions on both files so only owner can edit and view them.
 chmod -R 0600 /etc/jmxremote
-chown -R $serviceUserName:$serviceUserName /etc/jmxremote/jmxremote.*
+chown -R $serviceUserName:${groupName:-$serviceUserName} /etc/jmxremote/jmxremote.*
 
 echo "setup atom.service ..."
 systemctl enable atom
