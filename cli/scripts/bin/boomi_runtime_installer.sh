@@ -134,10 +134,10 @@ set +e
 
 # download Boomi installers
 echo "download boomi installers..."
-curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o atom_install64.sh && chmod +x "atom_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o molecule_install64.sh && chmod +x "molecule_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o cloud_install64.sh && chmod +x "cloud_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o gateway_install64.sh && chmod +x "gateway_install64.sh"
+curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o scripts/bin/atom_install64.sh && chmod +x "scripts/bin/atom_install64.sh"
+curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o scripts/bin/molecule_install64.sh && chmod +x "scripts/bin/molecule_install64.sh"
+curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o scripts/bin/cloud_install64.sh && chmod +x "scripts/bin/cloud_install64.sh"
+curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o scripts/bin/gateway_install64.sh && chmod +x "scripts/bin/gateway_install64.sh"
 cp scripts/home/* $HOME_DIR
 
 # Create the .profile
