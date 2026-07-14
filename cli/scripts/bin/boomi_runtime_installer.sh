@@ -7,6 +7,46 @@ if [ -n "$platform" ] ; then
     fi
 fi
 
+# --- DRY RUN MODE ---
+# Set DRY_RUN=true to inspect what the script would do without making any changes.
+if [ "${DRY_RUN:-false}" = "true" ]; then
+    echo "================================================================"
+    echo "=== DRY RUN MODE — no changes will be made                   ==="
+    echo "================================================================"
+    echo "  Atom Type    : ${atomType:-<not set>}"
+    echo "  Atom Name    : ${atomName:-<not set>}"
+    echo "  Install Dir  : ${installDir:-<not set>}"
+    echo "  Atom Folder  : ${atomFolderName:-<default: Type_atomName>}"
+    # Compute ATOM_HOME exactly as init.sh would
+    case "${atomType:-MOLECULE}" in
+        ATOM)     _DRY_HOME="${installDir}/${atomFolderName:-Atom_${atomName}}" ;;
+        MOLECULE) _DRY_HOME="${installDir}/${atomFolderName:-Molecule_${atomName}}" ;;
+        CLOUD)    _DRY_HOME="${installDir}/${atomFolderName:-Cloud_${atomName}}" ;;
+        GATEWAY)  _DRY_HOME="${installDir}/${atomFolderName:-Gateway_${atomName}}" ;;
+        *)        _DRY_HOME="${installDir}/${atomFolderName:-Unknown_${atomName}}" ;;
+    esac
+    echo "  Resolved ATOM_HOME : ${_DRY_HOME}"
+    echo "----------------------------------------------------------------"
+    if [ -d "${_DRY_HOME}" ]; then
+        echo "  STATUS: Installation folder already exists."
+        if [ -f "${_DRY_HOME}/bin/atom" ]; then
+            echo "  -> atom binary found at ${_DRY_HOME}/bin/atom"
+            echo "  -> Script would SKIP installation — existing setup is preserved"
+        else
+            echo "  -> Folder exists but atom binary NOT found (incomplete install)"
+            echo "  -> Script WOULD attempt to reinstall into ${_DRY_HOME}"
+        fi
+    else
+        echo "  STATUS: No existing installation found at ${_DRY_HOME}"
+        echo "  -> Script WOULD perform a NEW installation at ${_DRY_HOME}"
+        echo "  -> WARNING: Existing molecule setup will NOT be affected (new folder)"
+    fi
+    echo "================================================================"
+    echo "=== DRY RUN COMPLETE — exiting without making changes         ==="
+    echo "================================================================"
+    exit 0
+fi
+
 echo "begin boomi install..."
 USR=boomi
 GRP=boomi
