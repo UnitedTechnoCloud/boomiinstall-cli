@@ -132,12 +132,6 @@ chmod +x scripts/bin/*.*
 chmod +x scripts/home/*.*
 set +e
 
-# download Boomi installers
-echo "download boomi installers..."
-curl -fsSL https://platform.boomi.com/atom/atom_install64.sh -o scripts/bin/atom_install64.sh && chmod +x "scripts/bin/atom_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/molecule_install64.sh -o scripts/bin/molecule_install64.sh && chmod +x "scripts/bin/molecule_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/cloud_install64.sh -o scripts/bin/cloud_install64.sh && chmod +x "scripts/bin/cloud_install64.sh"
-curl -fsSL https://platform.boomi.com/atom/gateway_install64.sh -o scripts/bin/gateway_install64.sh && chmod +x "scripts/bin/gateway_install64.sh"
 cp scripts/home/* $HOME_DIR
 
 # Create the .profile
@@ -207,7 +201,7 @@ export client=${client}
 export group=${group}
 env
 echo "run init.sh..."
-. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} cloudId=${cloudId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} workDir=${workDir} tmpDir=${tmpDir} serviceUserName=${USR%%@*} groupName=${GRP}
+. bin/init.sh atomType="${atomType}" atomName="${atomName}" env="${boomiEnv}" classification=${boomiClassification} accountId=${boomiAccountId} cloudId=${cloudId} purgeHistoryDays=${purgeHistoryDays} maxMem=${maxMem} client=${client} group=${group} installDir=${installDir} workDir=${workDir} tmpDir=${tmpDir} serviceUserName=${USR%%@*} groupName=${GRP} atomFolderName=${atomFolderName}
 EOF
 
 echo "boomi install complete..."

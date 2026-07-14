@@ -8,3 +8,4 @@ exports.sh
 *_CodeReviewReport.html
 *_Extensions.json
 *install64.sh
+!cli/scripts/bin/*install64.sh
