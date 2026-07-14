@@ -9,7 +9,7 @@ unset ATOM_HOME
 if [[ "$atomType" = "ATOM" ]]
 	then
 		# install atom on the local drive 
-		ATOM_HOME=${INSTALL_DIR}/Atom_${atomName}
+		ATOM_HOME=${INSTALL_DIR}/${atomFolderName:-Atom_${atomName}}
 		if [[ -d "${ATOM_HOME}" ]]
 		then
 			echo "${ATOM_HOME} exits. Will stop installation."
@@ -29,7 +29,7 @@ if [[ "$atomType" = "ATOM" ]]
 
 	elif [[ "$atomType" = "CLOUD" ]]
 	then
-		ATOM_HOME=${INSTALL_DIR}/Cloud_${atomName}
+		ATOM_HOME=${INSTALL_DIR}/${atomFolderName:-Cloud_${atomName}}
 		if [[ -d "${ATOM_HOME}" ]]
 		then
 			echo "${ATOM_HOME} exits. Will stop installation."
@@ -42,7 +42,7 @@ if [[ "$atomType" = "ATOM" ]]
 		
 	elif [[ "$atomType" = "GATEWAY" ]]
 	then
-		ATOM_HOME=${INSTALL_DIR}/Gateway_${atomName}
+		ATOM_HOME=${INSTALL_DIR}/${atomFolderName:-Gateway_${atomName}}
 		if [[ -d "${ATOM_HOME}" ]]
 		then
 			echo "${ATOM_HOME} exits. Will stop installation."
@@ -56,7 +56,7 @@ if [[ "$atomType" = "ATOM" ]]
 	then
 	        echo "Molecule environment variables: "
 	        env	
-		ATOM_HOME=${INSTALL_DIR}/Molecule_${atomName}
+		ATOM_HOME=${INSTALL_DIR}/${atomFolderName:-Molecule_${atomName}}
 		if [[ -d "${ATOM_HOME}" ]]
 		then
 			echo "${ATOM_HOME} exits. Will stop installation."

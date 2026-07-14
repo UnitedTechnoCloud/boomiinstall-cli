@@ -5,7 +5,7 @@ source bin/common.sh
 # mandatory arguments
 unset atomType ATOM_HOME
 ARGUMENTS=(atomName accountId classification)
-OPT_ARGUMENTS=(proxyHost proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group)
+OPT_ARGUMENTS=(proxyHost proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group atomFolderName groupName cloudId)
 
 inputs "$@"
 
@@ -140,16 +140,16 @@ atomName="$(echo "${atomName}" | sed -e 's/-/_/g')"
 
 if [ "$atomType" = "ATOM" ];
 then
-        export ATOM_HOME="${installDir}/Atom_${atomName}"
+        export ATOM_HOME="${installDir}/${atomFolderName:-Atom_${atomName}}"
 elif [ "$atomType" = "MOLECULE" ];
 then
-        export ATOM_HOME="${installDir}/Molecule_${atomName}"
+        export ATOM_HOME="${installDir}/${atomFolderName:-Molecule_${atomName}}"
 elif [ "$atomType" = "CLOUD" ];
 then
-        export ATOM_HOME="${installDir}/Cloud_${atomName}"
+        export ATOM_HOME="${installDir}/${atomFolderName:-Cloud_${atomName}}"
 elif [ "$atomType" = "GATEWAY" ];
 then
-        export ATOM_HOME="${installDir}/Gateway_${atomName}"
+        export ATOM_HOME="${installDir}/${atomFolderName:-Gateway_${atomName}}"
 fi
 
 echo "export ATOM_HOME='$ATOM_HOME'" >> /home/$serviceUserName/.profile
