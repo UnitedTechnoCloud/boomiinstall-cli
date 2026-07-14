@@ -48,7 +48,7 @@ then
  proxyParams="${proxyParams} -VproxyPassword='${proxyPassword}'"
 fi
 
-./atom_install64.sh -q -console  \
+bin/atom_install64.sh -q -console  \
 -VinstallToken=$tokenId \
 -VatomName=$atomName ${proxyParams}\
 -dir $installDir 

@@ -63,7 +63,7 @@ then
 	proxyParams="${proxyParams} -VproxyPassword='${proxyPassword}'"
 fi
 
-./molecule_install64.sh -q -console  \
+bin/molecule_install64.sh -q -console  \
 -VinstallToken=$tokenId \
 -VatomName=$atomName \
 -VlocalTempPath=${TMP_DIR} \

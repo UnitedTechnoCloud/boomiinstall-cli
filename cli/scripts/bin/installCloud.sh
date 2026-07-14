@@ -66,7 +66,7 @@ then
  proxyParams="${proxyParams} -VproxyPassword='${proxyPassword}'"
 fi
 
-./cloud_install64.sh -q -console  \
+bin/cloud_install64.sh -q -console  \
 -VinstallToken=$tokenId \
 -VatomName=$atomName \
 -VlocalTempPath=${TMP_DIR} \
