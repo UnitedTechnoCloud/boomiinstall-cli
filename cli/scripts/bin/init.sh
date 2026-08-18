@@ -5,7 +5,7 @@ source bin/common.sh
 # mandatory arguments
 unset atomType ATOM_HOME
 ARGUMENTS=(atomName accountId classification)
-OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group)
+OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group installToken)
 
 inputs "$@"
 
@@ -29,6 +29,11 @@ echo "purge Days : ${purgeHistoryDays}"
 echo "max Memory : ${maxMem}"
 echo "efsMount : ${efsMount}"
 echo "authToken : ${authToken}"
+if [ ! -z "${installToken}" ]; then
+  echo "installToken : provided (AtomSphere API authentication will be skipped)"
+else
+  echo "installToken : not provided"
+fi
 echo "client : ${client}"
 echo "group : ${group}"
 echo "region : ${region}"

@@ -49,10 +49,13 @@ function inputs {
     fi
    done
 
-   # Check credentials
-   if [[  ${authToken} != BOOMI_TOKEN.* ]]  
+   # Check credentials - allow either a valid AtomSphere API token (authToken=BOOMI_TOKEN.*)
+   # OR a pre-generated Boomi install token (installToken) so installs can proceed without
+   # AtomSphere API credentials.
+   if [[  ${authToken} != BOOMI_TOKEN.* ]] && [ -z "${installToken}" ]
    then
    	echoee "Boomi platform authentication token is not valid. Please check https://help.boomi.com/bundle/integration/page/int-AtomSphere_API_Tokens_page.html"
+	echoee "Alternatively, provide a pre-generated 'installToken' to skip AtomSphere API authentication."
 	return 255
    fi
 

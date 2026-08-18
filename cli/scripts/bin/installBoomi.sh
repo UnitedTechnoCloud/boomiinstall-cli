@@ -16,7 +16,13 @@ if [[ "$atomType" = "ATOM" ]]
 			exit 0
         fi
 			
-		source bin/installerToken.sh atomType=${atomType}
+		if [ -z "${installToken}" ]
+		then
+			source bin/installerToken.sh atomType=${atomType}
+		else
+			echo "Using provided installToken, skipping AtomSphere InstallerToken API call."
+			tokenId="${installToken}"
+		fi
 		./bin/installAtom.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 		if [ ! -z "${env}" ]; 
 		then
@@ -36,7 +42,13 @@ if [[ "$atomType" = "ATOM" ]]
 			exit 0
         fi
 		
-		source bin/installerToken.sh atomType=${atomType} cloudId=$cloudId
+		if [ -z "${installToken}" ]
+		then
+			source bin/installerToken.sh atomType=${atomType} cloudId=$cloudId
+		else
+			echo "Using provided installToken, skipping AtomSphere InstallerToken API call."
+			tokenId="${installToken}"
+		fi
 		./bin/installCloud.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 		source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"		
 		
@@ -49,7 +61,13 @@ if [[ "$atomType" = "ATOM" ]]
 			exit 0
         fi
 		
-		source bin/installerToken.sh atomType=${atomType}
+		if [ -z "${installToken}" ]
+		then
+			source bin/installerToken.sh atomType=${atomType}
+		else
+			echo "Using provided installToken, skipping AtomSphere InstallerToken API call."
+			tokenId="${installToken}"
+		fi
 		./bin/installGateway.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 
 	elif [[ "$atomType" = "MOLECULE" ]]
@@ -63,7 +81,13 @@ if [[ "$atomType" = "ATOM" ]]
 			exit 0
         fi
 
-		source bin/installerToken.sh atomType=${atomType}
+		if [ -z "${installToken}" ]
+		then
+			source bin/installerToken.sh atomType=${atomType}
+		else
+			echo "Using provided installToken, skipping AtomSphere InstallerToken API call."
+			tokenId="${installToken}"
+		fi
 		echo "Token ID is: ${tokenId}"
 		./bin/installMolecule.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
 		if [ ! -z "${env}" ]; 

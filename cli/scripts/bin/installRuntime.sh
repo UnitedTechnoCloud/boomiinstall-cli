@@ -5,7 +5,7 @@ source bin/common.sh
 # mandatory arguments
 
 ARGUMENTS=(atomType atomName)
-OPT_ARGUMENTS=(INSTALL_DIR WORK_DIR JRE_HOME JAVA_HOME TMP_DIR proxyHost proxyPort proxyUser proxyPassword cloudId)
+OPT_ARGUMENTS=(INSTALL_DIR WORK_DIR JRE_HOME JAVA_HOME TMP_DIR proxyHost proxyPort proxyUser proxyPassword cloudId installToken)
 
 inputs "$@"
 if [ "$?" -gt "0" ]
@@ -69,7 +69,13 @@ fi
 
 
 # fetch token
-source bin/installerToken.sh atomType=${atomUpper} cloudId=${cloudId}
+if [ -z "${installToken}" ]
+then
+	source bin/installerToken.sh atomType=${atomUpper} cloudId=${cloudId}
+else
+	echo "Using provided installToken, skipping AtomSphere InstallerToken API call."
+	tokenId="${installToken}"
+fi
 
 ../${atomLower}_install64.sh -q -console  \
 -VinstallToken=$tokenId \
