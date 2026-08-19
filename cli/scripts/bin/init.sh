@@ -4,8 +4,8 @@ source bin/common.sh
 # get atom id of the by atom name
 # mandatory arguments
 unset atomType ATOM_HOME
-ARGUMENTS=(atomName accountId classification)
-OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group installToken)
+ARGUMENTS=(atomName accountId)
+OPT_ARGUMENTS=(proxyHost groupName proxyPort proxyUser proxyPassword installDir workDir tmpDir javaHome jreHome atomType purgeHistoryDays roleNames forceRestartMin maxMem apiType apiAuth sharedWebURL serviceUserName mountPoint env client group installToken classification)
 
 inputs "$@"
 
