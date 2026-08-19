@@ -74,6 +74,10 @@ sudo apt-get install -y libxml2-utils -y
 mkdir -p  /home/$USR/boomi/boomicicd
 cd /home/$USR/boomi/boomicicd
 GIT_BRANCH="${gitBranch:-main}"
+if [ -d "/home/$USR/boomi/boomicicd/boomiinstall-cli" ]; then
+    echo "Existing checkout found at /home/$USR/boomi/boomicicd/boomiinstall-cli, removing before re-clone..."
+    rm -rf "/home/$USR/boomi/boomicicd/boomiinstall-cli"
+fi
 echo "git clone (branch: ${GIT_BRANCH}) https://github.com/UnitedTechnoCloud/boomiinstall-cli..."
 git clone --branch "${GIT_BRANCH}" --single-branch https://github.com/UnitedTechnoCloud/boomiinstall-cli
 cd /home/$USR/boomi/boomicicd/boomiinstall-cli/cli/
