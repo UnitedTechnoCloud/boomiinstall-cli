@@ -6,18 +6,21 @@
 # Ubuntu host. It uses the boomi_runtime_installer.sh bootstrap flow from the
 # feature/snmx-install-token branch.
 #
-# NOTE ON TOKENS: boomiAtmosphereToken (a real AtomSphere API token) is always
-# required. Even when installToken is supplied, the post-install steps (atom
-# update, shared web server config, and - if boomiEnv is set - environment
-# creation/role attachment) call the AtomSphere REST API directly and cannot
-# be authenticated with an installToken. installToken only lets you skip the
-# separate "InstallerToken" API call used to bootstrap the local install4j
-# installer - it is not a full replacement for boomiAtmosphereToken.
+# NOTE ON TOKENS: you can install using EITHER token:
+#   - installToken: a pre-generated Boomi install token. Enough on its own to
+#     install the Atom and register it with AtomSphere. Since it is not a
+#     real API credential, steps that call the AtomSphere REST API directly
+#     (environment creation/role attachment, atom purge/restart settings
+#     update, shared web server override) are automatically skipped with a
+#     warning when no valid boomiAtmosphereToken is also provided.
+#   - boomiAtmosphereToken: a real AtomSphere API token (BOOMI_TOKEN.user:apiToken).
+#     Required only if you want those extra API-driven steps to run; also used
+#     to fetch an install token automatically if installToken isn't supplied.
 #
-# Usage:
+# Usage (installToken only, no AtomSphere API credentials needed):
+#   sudo ./createAtomRuntime.sh atomName=<name> accountId=<accountId> installToken=<token>
+#   -- or, using the classic AtomSphere API token instead --
 #   sudo ./createAtomRuntime.sh atomName=<name> accountId=<accountId> boomiAtmosphereToken=BOOMI_TOKEN.<user>:<apiToken>
-#   -- or, to also skip the InstallerToken API call using a pre-generated token --
-#   sudo ./createAtomRuntime.sh atomName=<name> accountId=<accountId> boomiAtmosphereToken=BOOMI_TOKEN.<user>:<apiToken> installToken=<token>
 #
 # Run with help=1 (or no arguments) to see the full list of options.
 #
@@ -26,18 +29,19 @@ set -euo pipefail
 usage() {
   cat <<'EOF'
 Usage:
-  sudo ./createAtomRuntime.sh atomName=<name> accountId=<accountId> boomiAtmosphereToken=<BOOMI_TOKEN...> [installToken=<token>] [option=value ...]
+  sudo ./createAtomRuntime.sh atomName=<name> accountId=<accountId> (installToken=<token> | boomiAtmosphereToken=<BOOMI_TOKEN...>) [option=value ...]
 
 Required:
   atomName                Name to give the Atom
   accountId               Boomi account ID to install the Atom under
+  installToken             Pre-generated Boomi install token (no AtomSphere API credentials needed)
+    -- or --
   boomiAtmosphereToken     AtomSphere API token, format BOOMI_TOKEN.<user>:<apiToken>
-                           (always required - see note above)
 
-Optional:
-  installToken             Pre-generated Boomi install token. If provided, skips the
-                            AtomSphere "InstallerToken" API call, but boomiAtmosphereToken
-                            is still required for the rest of the flow.
+Note: if only installToken is given (no boomiAtmosphereToken), environment
+attach/role assignment, atom purge/restart settings update, and shared web
+server override are skipped automatically - the Atom install itself still
+completes and registers with AtomSphere.
 
 Optional (defaults shown):
   platform=                     Cloud platform hint: aws|azure|gcp|"" (default: "")
@@ -118,17 +122,21 @@ if [ -n "${MISSING}" ]; then
   usage
 fi
 
-if [ -z "${boomiAtmosphereToken}" ]; then
-  echo "ERROR: boomiAtmosphereToken=BOOMI_TOKEN.<user>:<apiToken> is required (needed for atom update / shared server config / environment attach steps, even when installToken is used)." >&2
+if [ -z "${installToken}" ] && [ -z "${boomiAtmosphereToken}" ]; then
+  echo "ERROR: You must provide either installToken=<token> or boomiAtmosphereToken=BOOMI_TOKEN.<user>:<apiToken>" >&2
   usage
 fi
 
-if [[ "${boomiAtmosphereToken}" != BOOMI_TOKEN.* ]]; then
+if [ -n "${boomiAtmosphereToken}" ] && [[ "${boomiAtmosphereToken}" != BOOMI_TOKEN.* ]]; then
   echo "ERROR: boomiAtmosphereToken must start with 'BOOMI_TOKEN.' - see https://help.boomi.com/bundle/integration/page/int-AtomSphere_API_Tokens_page.html" >&2
   exit 1
 fi
 
-if [ -n "${boomiEnv}" ] && [ -z "${boomiClassification}" ]; then
+if [ -z "${boomiAtmosphereToken}" ]; then
+  echo "WARNING: no boomiAtmosphereToken provided - environment attach/role assignment, atom purge/restart settings update, and shared web server override will be skipped. Only the Atom install itself will run." >&2
+fi
+
+if [ -n "${boomiEnv}" ] && [ -n "${boomiAtmosphereToken}" ] && [ -z "${boomiClassification}" ]; then
   echo "ERROR: boomiClassification=<TEST|PROD> is required when boomiEnv is set" >&2
   usage
 fi
@@ -146,8 +154,10 @@ export boomiAccountId="${accountId}"
 echo "=== Boomi ATOM runtime setup ==="
 echo "Atom Name    : ${atomName}"
 echo "Account Id   : ${accountId}"
-if [ -n "${installToken}" ]; then
+if [ -n "${installToken}" ] && [ -n "${boomiAtmosphereToken}" ]; then
   echo "Auth mode    : boomiAtmosphereToken + installToken (InstallerToken API call skipped)"
+elif [ -n "${installToken}" ]; then
+  echo "Auth mode    : installToken only (env attach / atom update / shared server override will be skipped)"
 else
   echo "Auth mode    : boomiAtmosphereToken (InstallerToken fetched via AtomSphere API)"
 fi

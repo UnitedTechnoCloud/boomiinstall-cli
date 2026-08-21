@@ -24,13 +24,18 @@ if [[ "$atomType" = "ATOM" ]]
 			tokenId="${installToken}"
 		fi
 		./bin/installAtom.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
-		if [ ! -z "${env}" ]; 
+		if [[ "${authToken}" == BOOMI_TOKEN.* ]]
 		then
-			source bin/createEnvAndAttachRoleAndAtom.sh env="${env}" classification=${classification} atomName="${atomName}" roleNames="${roleNames}" purgeHistoryDays="${purgeHistoryDays}" forceRestartTime="${forceRestartMin}"
+			if [ ! -z "${env}" ]; 
+			then
+				source bin/createEnvAndAttachRoleAndAtom.sh env="${env}" classification=${classification} atomName="${atomName}" roleNames="${roleNames}" purgeHistoryDays="${purgeHistoryDays}" forceRestartTime="${forceRestartMin}"
+			else
+				source bin/updateAtom.sh atomId=${atomId} purgeHistoryDays="${purgeHistoryDays}" forceRestartTime=${forceRestartTime}
+			fi
+			source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"
 		else
-			source bin/updateAtom.sh atomId=${atomId} purgeHistoryDays="${purgeHistoryDays}" forceRestartTime=${forceRestartTime}
+			echo "No valid AtomSphere authToken provided - skipping environment attach/role assignment, atom purge/restart settings update, and shared web server override. The Atom install itself is unaffected."
 		fi
-		source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"
 		input="conf/atom_container.properties"
 
 	elif [[ "$atomType" = "CLOUD" ]]
@@ -50,7 +55,12 @@ if [[ "$atomType" = "ATOM" ]]
 			tokenId="${installToken}"
 		fi
 		./bin/installCloud.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
-		source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"		
+		if [[ "${authToken}" == BOOMI_TOKEN.* ]]
+		then
+			source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"
+		else
+			echo "No valid AtomSphere authToken provided - skipping shared web server override. The Cloud install itself is unaffected."
+		fi
 		
 	elif [[ "$atomType" = "GATEWAY" ]]
 	then
@@ -90,13 +100,18 @@ if [[ "$atomType" = "ATOM" ]]
 		fi
 		echo "Token ID is: ${tokenId}"
 		./bin/installMolecule.sh atomName="${atomName}" tokenId="${tokenId}" INSTALL_DIR="${INSTALL_DIR}" WORK_DIR="${WORK_DIR}" TMP_DIR="${TMP_DIR}" JRE_HOME="${JRE_HOME}" JAVA_HOME="${JAVA_HOME}" proxyHost="${proxyHost}" proxyPort="${proxyPort}" proxyUser="${proxyUser}" proxyPassword="${proxyPassword}"
-		if [ ! -z "${env}" ]; 
+		if [[ "${authToken}" == BOOMI_TOKEN.* ]]
 		then
-			source bin/createEnvAndAttachRoleAndAtom.sh env="${env}" classification=${classification} atomName="${atomName}" roleNames="${roleNames}" purgeHistoryDays="${purgeHistoryDays}" forceRestartTime="${forceRestartMin}"
+			if [ ! -z "${env}" ]; 
+			then
+				source bin/createEnvAndAttachRoleAndAtom.sh env="${env}" classification=${classification} atomName="${atomName}" roleNames="${roleNames}" purgeHistoryDays="${purgeHistoryDays}" forceRestartTime="${forceRestartMin}"
+			else
+				source bin/updateAtom.sh atomId=${atomId} purgeHistoryDays="${purgeHistoryDays}" forceRestartTime=${forceRestartTime}
+			fi
+			source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"
 		else
-			source bin/updateAtom.sh atomId=${atomId} purgeHistoryDays="${purgeHistoryDays}" forceRestartTime=${forceRestartTime}
+			echo "No valid AtomSphere authToken provided - skipping environment attach/role assignment, atom purge/restart settings update, and shared web server override. The Molecule install itself is unaffected."
 		fi
-		source bin/updateSharedServer.sh atomName="${atomName}" overrideUrl=true url="${sharedWebURL}" apiType="${apiType}" auth="${apiAuth}"
 		input="conf/molecule_container.properties"
 	else
 		echo "Invalid AtomType"
