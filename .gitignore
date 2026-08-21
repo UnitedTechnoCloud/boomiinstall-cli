@@ -8,3 +8,5 @@ exports.sh
 *_CodeReviewReport.html
 *_Extensions.json
 *install64.sh
+runtime_log.txt
+

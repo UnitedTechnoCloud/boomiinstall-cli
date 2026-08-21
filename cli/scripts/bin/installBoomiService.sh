@@ -10,6 +10,8 @@ cat <<EOF >/etc/systemd/system/atom.service
 Description=Boomi $atomName
 After=network.target
 RequiresMountsFor="${mountPoint}"
+StartLimitIntervalSec=300
+StartLimitBurst=10
 [Service]
 User=$serviceUserName
 WorkingDirectory=/home/${serviceUserName}
@@ -19,6 +21,7 @@ ExecStop="/home/${serviceUserName}/stop-atom.sh"
 Type=forking
 TimeoutStartSec=600
 Restart=always
+RestartSec=15
 [Install]
 WantedBy=multi-user.target
 EOF
