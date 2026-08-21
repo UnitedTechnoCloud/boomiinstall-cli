@@ -7,6 +7,10 @@ source bin/common.sh
 ARGUMENTS=(atomName cloudId tokenId INSTALL_DIR WORK_DIR JRE_HOME JAVA_HOME TMP_DIR)
 OPT_ARGUMENTS=(proxyHost proxyPort proxyUser proxyPassword)
 
+# This script only runs the local install4j installer using tokenId - it never calls the
+# platform API, so a real AtomSphere authToken is not required.
+skipAuthCheck=true
+
 if [ -z "${INSTALL_DIR}" ]
 then
       INSTALL_DIR=/var/boomi 

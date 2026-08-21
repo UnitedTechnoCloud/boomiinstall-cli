@@ -49,13 +49,15 @@ function inputs {
     fi
    done
 
-   # Check credentials - allow either a valid AtomSphere API token (authToken=BOOMI_TOKEN.*)
-   # OR a pre-generated Boomi install token (installToken) so installs can proceed without
-   # AtomSphere API credentials.
-   if [[  ${authToken} != BOOMI_TOKEN.* ]] && [ -z "${installToken}" ]
+   # Check credentials. Scripts that only run the local install4j installer (installAtom.sh,
+   # installCloud.sh, installGateway.sh, installMolecule.sh, installRuntime.sh) never call the
+   # platform API themselves - they set skipAuthCheck=true before calling inputs() since a
+   # pre-generated installToken is all they need. Every other script (query/create Environment,
+   # Role, Atom, SharedServer, etc.) genuinely calls the AtomSphere REST API and always requires
+   # a valid authToken - installToken cannot substitute for that.
+   if [[  ${authToken} != BOOMI_TOKEN.* ]] && [ "${skipAuthCheck}" != "true" ]
    then
    	echoee "Boomi platform authentication token is not valid. Please check https://help.boomi.com/bundle/integration/page/int-AtomSphere_API_Tokens_page.html"
-	echoee "Alternatively, provide a pre-generated 'installToken' to skip AtomSphere API authentication."
 	return 255
    fi
 
@@ -124,10 +126,15 @@ function clean {
 function callAPI {
 	unset ERROR ERROR_MESSAGE
 
+	if [[ ${authToken} != BOOMI_TOKEN.* ]]; then
+		echoee "callAPI: authToken is missing or invalid (must start with BOOMI_TOKEN.). Aborting instead of prompting curl for a password."
+		return 255
+	fi
+
 	if [ ! -z ${SLEEP_TIMER} ]; then sleep ${SLEEP_TIMER}; fi
   if [[ $URL != *queryMore* ]]
   then
-   curl -s -X POST -u $authToken -H "${h1}" -H "${h2}" $URL -d@"${WORKSPACE}"/tmp.json > "${WORKSPACE}"/out.json
+   curl -s -X POST -u "$authToken" -H "${h1}" -H "${h2}" $URL -d@"${WORKSPACE}"/tmp.json > "${WORKSPACE}"/out.json
    export ERROR=$(jq  -r . "${WORKSPACE}"/out.json 2>&1 > /dev/null)
    if [[ ! -z $ERROR ]]; then 
 	   export ERROR_MESSAGE=`cat "${WORKSPACE}"/out.json` 
@@ -148,7 +155,7 @@ function callAPI {
 		 echovv "export ${exportVariable}=${!exportVariable}."
    fi
   else
-   curl -s -X POST -u $authToken -H "${h1}" -H "${h2}" $URL -d${queryToken} > "${WORKSPACE}"/out.json
+   curl -s -X POST -u "$authToken" -H "${h1}" -H "${h2}" $URL -d${queryToken} > "${WORKSPACE}"/out.json
    export ERROR=$(jq  -r . "${WORKSPACE}"/out.json 2>&1 > /dev/null)
    if [[ ! -z $ERROR ]]; then 
 	   export ERROR_MESSAGE=`cat "${WORKSPACE}"/out.json` 
@@ -172,8 +179,12 @@ function callAPI {
 
 function getAPI {
 	unset ERROR ERROR_MESSAGE
+	if [[ ${authToken} != BOOMI_TOKEN.* ]]; then
+		echoee "getAPI: authToken is missing or invalid (must start with BOOMI_TOKEN.). Aborting instead of prompting curl for a password."
+		return 255
+	fi
 	if [ ! -z ${SLEEP_TIMER} ]; then sleep ${SLEEP_TIMER}; fi
-  curl -s -X GET -u $authToken -H "${h1}" -H "${h2}" "$URL" > "${WORKSPACE}"/out.json
+  curl -s -X GET -u "$authToken" -H "${h1}" -H "${h2}" "$URL" > "${WORKSPACE}"/out.json
   export ERROR=$(jq  -r . "${WORKSPACE}"/out.json 2>&1 > /dev/null)
    if [[ ! -z $ERROR ]]; then 
 	   export ERROR_MESSAGE=`cat "${WORKSPACE}"/out.json` 
@@ -197,8 +208,14 @@ function getXMLAPI {
 	unset ERROR ERROR_MESSAGE
 	export ERROR=0
   export ERROR_MESSAGE=""
+	if [[ ${authToken} != BOOMI_TOKEN.* ]]; then
+		echoee "getXMLAPI: authToken is missing or invalid (must start with BOOMI_TOKEN.). Aborting instead of prompting curl for a password."
+		export ERROR=255
+		export ERROR_MESSAGE="authToken is missing or invalid"
+		return 255
+	fi
 	if [ ! -z ${SLEEP_TIMER} ]; then sleep ${SLEEP_TIMER}; fi
-  curl -s -X GET -u $authToken -H "application/xml" -H "application/xml" "$URL" > "${WORKSPACE}"/out.xml
+  curl -s -X GET -u "$authToken" -H "application/xml" -H "application/xml" "$URL" > "${WORKSPACE}"/out.xml
   if [ "$VERBOSE" == "true" ]  
   then 
    cat  "${WORKSPACE}"/out.xml >> "${WORKSPACE}"/outs.xml

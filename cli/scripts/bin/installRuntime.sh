@@ -7,6 +7,12 @@ source bin/common.sh
 ARGUMENTS=(atomType atomName)
 OPT_ARGUMENTS=(INSTALL_DIR WORK_DIR JRE_HOME JAVA_HOME TMP_DIR proxyHost proxyPort proxyUser proxyPassword cloudId installToken)
 
+# When installToken is provided this script skips installerToken.sh (the only API call it
+# would otherwise make), so a real AtomSphere authToken is not required in that case.
+if [ -n "${installToken}" ]; then
+	skipAuthCheck=true
+fi
+
 inputs "$@"
 if [ "$?" -gt "0" ]
 then
